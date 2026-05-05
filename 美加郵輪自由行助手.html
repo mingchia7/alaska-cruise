@@ -1,0 +1,2239 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>美加郵輪自由行助手 — 長輩專用</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html, body {
+  font-family: "PingFang TC", "Microsoft JhengHei", "Heiti TC", "Noto Sans TC", sans-serif;
+  font-size: 18px;
+  line-height: 1.6;
+  color: #1a1a1a;
+  background: #f5f1e8;
+  -webkit-font-smoothing: antialiased;
+}
+body { padding-bottom: 80px; }
+
+/* 頂部標題 */
+.header {
+  background: linear-gradient(135deg, #c8102e 0%, #a30d24 100%);
+  color: white;
+  padding: 18px 16px;
+  text-align: center;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+.header h1 { font-size: 22px; font-weight: 700; letter-spacing: 1px; }
+.header .sub { font-size: 14px; opacity: 0.9; margin-top: 4px; }
+
+/* 緊急按鈕固定底部 */
+.emergency-fab {
+  position: fixed;
+  bottom: 16px;
+  right: 16px;
+  background: #d50000;
+  color: white;
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 14px;
+  box-shadow: 0 4px 16px rgba(213,0,0,0.5);
+  cursor: pointer;
+  z-index: 200;
+  border: 3px solid white;
+  text-align: center;
+  line-height: 1.1;
+}
+.emergency-fab:active { transform: scale(0.95); }
+
+/* 主分類卡片 */
+.tab-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  padding: 16px;
+}
+.tab-card {
+  background: white;
+  border-radius: 16px;
+  padding: 20px 12px;
+  text-align: center;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  border: 3px solid transparent;
+  transition: all 0.15s;
+}
+.tab-card:active { transform: scale(0.97); }
+.tab-card .icon-circle {
+  width: 60px;
+  height: 60px;
+  margin: 0 auto 10px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  font-weight: 800;
+  color: white;
+}
+.tab-card .label { font-size: 18px; font-weight: 700; color: #333; }
+.tab-card .sub { font-size: 13px; color: #777; margin-top: 4px; }
+
+.color-1 { background: #2563eb; }
+.color-2 { background: #059669; }
+.color-3 { background: #dc2626; }
+.color-4 { background: #7c3aed; }
+.color-5 { background: #ea580c; }
+.color-6 { background: #0891b2; }
+
+/* 內容區塊 */
+.section {
+  display: none;
+  padding: 0 16px 16px;
+}
+.section.active { display: block; }
+.section-header {
+  background: white;
+  margin: 0 -16px 16px;
+  padding: 14px 16px;
+  border-bottom: 2px solid #e5e5e5;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.back-btn {
+  background: #f3f4f6;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 16px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+}
+.back-btn:active { background: #e5e5e5; }
+.section-title { font-size: 20px; font-weight: 700; }
+
+/* 摺疊面板 */
+.accordion {
+  background: white;
+  border-radius: 12px;
+  margin-bottom: 12px;
+  overflow: hidden;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+}
+.acc-header {
+  padding: 16px;
+  font-weight: 700;
+  font-size: 17px;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #fafafa;
+  border-left: 5px solid #2563eb;
+}
+.acc-header.active { background: #eff6ff; }
+.acc-header .arrow { transition: transform 0.2s; font-size: 14px; color: #666; }
+.acc-header.active .arrow { transform: rotate(90deg); }
+.acc-body {
+  display: none;
+  padding: 16px;
+  border-top: 1px solid #eee;
+}
+.acc-body.active { display: block; }
+
+/* 短語卡片 */
+.phrase {
+  background: #f9fafb;
+  border-radius: 10px;
+  padding: 14px;
+  margin-bottom: 10px;
+  border-left: 4px solid #2563eb;
+}
+.phrase .zh { font-size: 16px; color: #444; margin-bottom: 6px; }
+.phrase .en { font-size: 19px; font-weight: 600; color: #1a1a1a; line-height: 1.4; }
+.phrase .pinyin { font-size: 14px; color: #888; margin-top: 4px; font-style: italic; }
+.phrase-show-btn {
+  margin-top: 10px;
+  background: #2563eb;
+  color: white;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+/* 全螢幕卡片(給對方看) */
+.fullcard-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.85);
+  z-index: 500;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.fullcard-overlay.active { display: flex; }
+.fullcard {
+  background: white;
+  border-radius: 20px;
+  padding: 32px 24px;
+  max-width: 95vw;
+  max-height: 90vh;
+  overflow: auto;
+  text-align: center;
+  position: relative;
+}
+.fullcard .show-text { font-size: 32px; font-weight: 700; line-height: 1.4; color: #000; margin-bottom: 16px; }
+.fullcard .show-zh { font-size: 18px; color: #666; margin-top: 12px; }
+.fullcard-close {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: #f3f4f6;
+  border: none;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  font-size: 20px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* 資訊條目 */
+.info-row {
+  background: white;
+  border-radius: 10px;
+  padding: 14px 16px;
+  margin-bottom: 10px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+.info-row .label { font-weight: 700; color: #555; font-size: 14px; margin-bottom: 4px; }
+.info-row .value { font-size: 17px; color: #1a1a1a; }
+.info-row a { color: #2563eb; text-decoration: none; font-weight: 600; }
+
+.callout {
+  background: #fef3c7;
+  border-left: 5px solid #f59e0b;
+  border-radius: 8px;
+  padding: 14px 16px;
+  margin-bottom: 14px;
+  font-size: 16px;
+}
+.callout.danger {
+  background: #fee2e2;
+  border-left-color: #dc2626;
+}
+.callout.success {
+  background: #d1fae5;
+  border-left-color: #059669;
+}
+.callout strong { display: block; margin-bottom: 4px; font-size: 15px; }
+
+/* 緊急電話按鈕 */
+.call-btn {
+  display: block;
+  background: #dc2626;
+  color: white;
+  text-decoration: none;
+  text-align: center;
+  padding: 18px;
+  border-radius: 12px;
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 10px;
+  box-shadow: 0 2px 6px rgba(220,38,38,0.3);
+}
+.call-btn.green { background: #059669; box-shadow: 0 2px 6px rgba(5,150,105,0.3); }
+.call-btn.blue { background: #2563eb; box-shadow: 0 2px 6px rgba(37,99,235,0.3); }
+.call-btn .num { font-size: 24px; display: block; margin-top: 4px; letter-spacing: 1px; }
+
+/* 行程日 */
+.day-card {
+  background: white;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 12px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  border-top: 4px solid #ea580c;
+}
+.day-card .day-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: #ea580c;
+  letter-spacing: 1px;
+  margin-bottom: 4px;
+}
+.day-card .day-title { font-size: 19px; font-weight: 700; margin-bottom: 8px; }
+.day-card .day-detail { font-size: 16px; color: #444; }
+.day-card ul { list-style: none; padding-left: 0; }
+.day-card li {
+  padding: 8px 0;
+  border-top: 1px dashed #e5e5e5;
+  display: flex;
+  gap: 10px;
+}
+.day-card li:first-child { border-top: none; }
+.day-card li .time {
+  flex-shrink: 0;
+  font-weight: 700;
+  color: #2563eb;
+  width: 70px;
+}
+
+/* 大字模式提示 */
+.tip-bar {
+  background: #fffbeb;
+  padding: 10px 16px;
+  font-size: 14px;
+  color: #92400e;
+  text-align: center;
+  border-bottom: 1px solid #fde68a;
+}
+
+/* 按鈕群組 */
+.btn-group {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.sub-btn {
+  background: white;
+  border: 2px solid #ddd;
+  padding: 12px 8px;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+}
+.sub-btn.active {
+  background: #2563eb;
+  color: white;
+  border-color: #2563eb;
+}
+
+@media (min-width: 768px) {
+  .tab-grid { grid-template-columns: repeat(6, 1fr); max-width: 1100px; margin: 0 auto; }
+  .section { max-width: 800px; margin: 0 auto; }
+}
+
+/* ==== 找回家人 / 定位 ==== */
+.location-fab {
+  position: fixed;
+  bottom: 96px;
+  right: 16px;
+  background: #0891b2;
+  color: white;
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 13px;
+  box-shadow: 0 4px 16px rgba(8,145,178,0.5);
+  cursor: pointer;
+  z-index: 200;
+  border: 3px solid white;
+  text-align: center;
+  line-height: 1.1;
+}
+.location-fab:active { transform: scale(0.95); }
+.locate-card {
+  background: linear-gradient(135deg, #0891b2 0%, #0e7490 100%);
+  color: white;
+  border-radius: 14px;
+  padding: 16px;
+  margin-bottom: 16px;
+  box-shadow: 0 4px 12px rgba(8,145,178,0.25);
+}
+.locate-btn {
+  background: #fbbf24;
+  color: #78350f;
+  border: none;
+  width: 100%;
+  padding: 16px;
+  border-radius: 12px;
+  font-size: 18px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+  margin-bottom: 10px;
+}
+.locate-btn:active { transform: scale(0.98); }
+.locate-btn.recording { background: #ef4444; color: white; animation: pulse 1s infinite; }
+.locate-result {
+  background: white;
+  color: #1a1a1a;
+  border-radius: 10px;
+  padding: 14px;
+  margin-top: 10px;
+  display: none;
+}
+.locate-result.show { display: block; }
+.locate-result .addr { font-size: 18px; font-weight: 700; line-height: 1.4; margin-bottom: 8px; }
+.locate-result .coords { font-size: 13px; color: #666; margin-bottom: 8px; }
+.locate-result .accuracy { font-size: 13px; color: #888; margin-bottom: 12px; }
+.locate-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.locate-actions button {
+  background: #2563eb;
+  color: white;
+  border: none;
+  padding: 12px;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+}
+.locate-actions button.green { background: #059669; }
+.locate-status { font-size: 13px; opacity: 0.9; margin-top: 6px; min-height: 18px; }
+
+.contact-card {
+  background: white;
+  border-radius: 12px;
+  padding: 14px;
+  margin-bottom: 10px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  border-left: 5px solid #0891b2;
+}
+.contact-card .name { font-size: 17px; font-weight: 700; margin-bottom: 4px; }
+.contact-card .role { font-size: 13px; color: #777; margin-bottom: 10px; }
+.contact-card .actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 6px;
+}
+.contact-card .actions a {
+  background: #2563eb;
+  color: white;
+  text-decoration: none;
+  text-align: center;
+  padding: 10px 4px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+}
+.contact-card .actions a.green { background: #059669; }
+.contact-card .actions a.purple { background: #7c3aed; }
+
+.rendez-card {
+  background: white;
+  border-radius: 10px;
+  padding: 14px;
+  margin-bottom: 10px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  border-left: 4px solid #ea580c;
+}
+.rendez-card .area { font-size: 13px; color: #ea580c; font-weight: 700; }
+.rendez-card .place { font-size: 17px; font-weight: 700; margin: 4px 0; }
+.rendez-card .desc { font-size: 14px; color: #555; margin-bottom: 8px; }
+.rendez-card a {
+  display: inline-block;
+  background: #ea580c;
+  color: white;
+  text-decoration: none;
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+@media print {
+  .emergency-fab, .header, .back-btn, .phrase-show-btn { display: none !important; }
+  .section { display: block !important; page-break-after: always; }
+}
+
+/* ==== 即時翻譯區塊 ==== */
+.realtime-translate {
+  background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+  color: white;
+  border-radius: 14px;
+  padding: 16px;
+  margin-bottom: 16px;
+  box-shadow: 0 4px 12px rgba(37,99,235,0.25);
+}
+.rt-header {
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.rt-badge {
+  background: rgba(255,255,255,0.25);
+  font-size: 12px;
+  padding: 3px 8px;
+  border-radius: 10px;
+  font-weight: 500;
+}
+.rt-direction {
+  display: flex;
+  background: rgba(255,255,255,0.15);
+  border-radius: 10px;
+  padding: 4px;
+  margin-bottom: 12px;
+}
+.dir-btn {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: white;
+  padding: 10px;
+  font-size: 16px;
+  font-weight: 600;
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: inherit;
+}
+.dir-btn.active {
+  background: white;
+  color: #1e40af;
+}
+#rt-input {
+  width: 100%;
+  border: none;
+  border-radius: 10px;
+  padding: 14px;
+  font-size: 18px;
+  font-family: inherit;
+  resize: vertical;
+  min-height: 80px;
+  color: #1a1a1a;
+  margin-bottom: 10px;
+  -webkit-appearance: none;
+}
+#rt-input:focus { outline: 3px solid #fde68a; }
+.rt-buttons {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.rt-btn {
+  background: white;
+  color: #1e40af;
+  border: none;
+  padding: 12px 6px;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+}
+.rt-btn:active { transform: scale(0.96); }
+.rt-btn.primary { background: #fbbf24; color: #78350f; }
+.rt-btn.recording { background: #ef4444; color: white; animation: pulse 1s infinite; }
+@keyframes pulse { 50% { opacity: 0.6; } }
+.rt-output {
+  background: white;
+  color: #1a1a1a;
+  border-radius: 10px;
+  padding: 16px;
+  min-height: 60px;
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 1.4;
+  margin-bottom: 10px;
+}
+.rt-output.empty { color: #aaa; font-weight: 400; font-size: 15px; font-style: italic; }
+.rt-output-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 6px;
+}
+.rt-status { font-size: 13px; opacity: 0.9; margin-top: 6px; min-height: 18px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>美加郵輪自由行助手</h1>
+  <div class="sub">溫哥華 · 阿拉斯加 · 2026/5/8 ~ 5/19</div>
+</div>
+
+<!-- 主畫面 -->
+<div id="home" class="section active" style="display:block;">
+  <div class="tip-bar">點擊下方類別 · 不需網路也能使用</div>
+  <div class="tab-grid">
+    <div class="tab-card" onclick="showSection('translate')">
+      <div class="icon-circle color-1">譯</div>
+      <div class="label">翻譯助手</div>
+      <div class="sub">常用句子 / 出示卡片</div>
+    </div>
+    <div class="tab-card" onclick="showSection('culture')">
+      <div class="icon-circle color-2">化</div>
+      <div class="label">文化顧問</div>
+      <div class="sub">小費 / 禮節 / 規矩</div>
+    </div>
+    <div class="tab-card" onclick="showSection('emergency')">
+      <div class="icon-circle color-3">急</div>
+      <div class="label">緊急應對</div>
+      <div class="sub">報警 / 失竊 / 護照</div>
+    </div>
+    <div class="tab-card" onclick="showSection('medical')">
+      <div class="icon-circle color-4">醫</div>
+      <div class="label">醫療專家</div>
+      <div class="sub">就醫 / 藥房 / 病史卡</div>
+    </div>
+    <div class="tab-card" onclick="showSection('itinerary')">
+      <div class="icon-circle color-5">程</div>
+      <div class="label">行程規劃</div>
+      <div class="sub">每日景點與貼士</div>
+    </div>
+    <div class="tab-card" onclick="showSection('lost')">
+      <div class="icon-circle color-6">尋</div>
+      <div class="label">找回家人</div>
+      <div class="sub">定位分享 / 走失應對</div>
+    </div>
+  </div>
+
+  <div style="padding: 0 16px;">
+    <div class="callout success">
+      <strong>使用說明</strong>
+      1. 不會說英文時 → 翻譯助手 → 點擊「給對方看」放大顯示<br>
+      2. 緊撥緊急電話 → 點擊右下紅色「緊急」浮動按鈕<br>
+      3. <b>走失時 → 點擊右下藍色「找家人」按鈕</b> → 取得位置 → 分享給家人<br>
+      4. 此網頁可加到主畫面當 App 使用
+    </div>
+    <div class="callout">
+      <strong>如何加到手機主畫面?</strong>
+      <b>iPhone:</b> 在 Safari 開啟此頁 → 下方分享圖示 → 加入主畫面<br>
+      <b>Android:</b> 在 Chrome 開啟此頁 → 右上選單 → 加到主畫面
+    </div>
+  </div>
+</div>
+
+<!-- ====== 翻譯助手 ====== -->
+<div id="translate" class="section">
+  <div class="section-header">
+    <button class="back-btn" onclick="showSection('home')">← 返回</button>
+    <div class="section-title">翻譯助手</div>
+  </div>
+
+  <!-- ==== 即時翻譯 ==== -->
+  <div class="realtime-translate">
+    <div class="rt-header">
+      即時翻譯 <span class="rt-badge">需網路</span>
+    </div>
+    <div class="rt-direction">
+      <button class="dir-btn active" id="dir-zh2en" onclick="setDirection('zh2en')">中文 → 英文</button>
+      <button class="dir-btn" id="dir-en2zh" onclick="setDirection('en2zh')">英文 → 中文</button>
+    </div>
+    <textarea id="rt-input" placeholder="在這裡打字,或按下面的「說話」按鈕..."></textarea>
+    <div class="rt-buttons">
+      <button class="rt-btn" id="voice-btn" onclick="startVoiceInput()">🎤 說話</button>
+      <button class="rt-btn primary" onclick="doTranslate()">立即翻譯</button>
+      <button class="rt-btn" onclick="clearTranslate()">清除</button>
+    </div>
+    <div class="rt-output empty" id="rt-output">翻譯結果會顯示在這裡</div>
+    <div class="rt-output-actions" id="rt-actions" style="display:none;">
+      <button class="rt-btn" onclick="speakOutput()">🔊 播放</button>
+      <button class="rt-btn" onclick="showOutputFull()">給對方看</button>
+      <button class="rt-btn" onclick="openGoogleTranslate()">Google翻譯</button>
+    </div>
+    <div class="rt-status" id="rt-status"></div>
+  </div>
+
+  <div class="callout">
+    <strong>離線常用句子</strong>
+    沒網路時可用以下分類找好句子,點「給對方看」放大顯示給當地人看。
+  </div>
+
+  <div class="btn-group" id="trans-tabs">
+    <button class="sub-btn active" onclick="switchTransCat('basic', this)">基本溝通</button>
+    <button class="sub-btn" onclick="switchTransCat('food', this)">用餐點餐</button>
+    <button class="sub-btn" onclick="switchTransCat('shop', this)">購物逛街</button>
+    <button class="sub-btn" onclick="switchTransCat('transport', this)">交通問路</button>
+    <button class="sub-btn" onclick="switchTransCat('hotel', this)">飯店郵輪</button>
+    <button class="sub-btn" onclick="switchTransCat('help', this)">求助情境</button>
+  </div>
+
+  <div id="phrases-container"></div>
+</div>
+
+<!-- ====== 文化顧問 ====== -->
+<div id="culture" class="section">
+  <div class="section-header">
+    <button class="back-btn" onclick="showSection('home')">← 返回</button>
+    <div class="section-title">當地文化顧問</div>
+  </div>
+
+  <div class="callout danger">
+    <strong>必看!最容易踩雷的三件事</strong>
+    1. <b>小費一定要給</b>(餐廳、計程車、行李員)<br>
+    2. <b>價錢標籤都不含稅</b>(結帳會多 12% 左右)<br>
+    3. <b>過馬路一定要走斑馬線並按紅綠燈鈕</b>(罰款很重)
+  </div>
+
+  <div class="accordion">
+    <div class="acc-header" onclick="toggleAcc(this)">小費怎麼給? <span class="arrow">▶</span></div>
+    <div class="acc-body">
+      <p><b>餐廳坐下來吃飯:</b>帳單金額的 <b>15%~20%</b>(稅後不算,看小計)</p>
+      <p><b>計程車 / Uber:</b>車資的 <b>10%~15%</b></p>
+      <p><b>飯店行李員:</b>每件行李 <b>1~2 加幣 / 美元</b></p>
+      <p><b>飯店打掃員:</b>每晚 <b>2~5 加幣</b>放在床頭</p>
+      <p><b>郵輪上:</b>大多已自動扣每日服務費(約 USD 16~18/人/天),不必另給。但若要客房服務或請船員幫忙,可給 <b>1~2 美元</b>小費</p>
+      <p><b>免小費:</b>速食店(麥當勞)、自助式咖啡店、買東西、藥房</p>
+      <div class="callout success" style="margin-top:12px;">
+        <strong>實用秘訣</strong>
+        刷卡結帳時,機器會問 Tip(小費),選 15% 或 18% 即可。不要按 No Tip 按鈕,服務生會很尷尬。
+      </div>
+    </div>
+  </div>
+
+  <div class="accordion">
+    <div class="acc-header" onclick="toggleAcc(this)">稅金 / 標價問題 <span class="arrow">▶</span></div>
+    <div class="acc-body">
+      <p>美加的標價 <b>不含稅</b>,結帳時加上稅金:</p>
+      <p>• <b>溫哥華 (BC省):</b>5% GST + 7% PST = <b>12%</b></p>
+      <p>• 餐廳另加 7% PST 賣酒精;一般食物只收 5% GST</p>
+      <p>• <b>阿拉斯加郵輪在美國港口:</b>各州不一,大多 5%~10%</p>
+      <p>• 看到 <b>$10</b> 衣服,實際付約 <b>$11.20</b>,加小費就更多</p>
+      <div class="callout">
+        <strong>建議</strong>
+        身上多備一些 <b>1元、5元紙鈔</b>方便給小費。可以在機場或飯店換零錢。
+      </div>
+    </div>
+  </div>
+
+  <div class="accordion">
+    <div class="acc-header" onclick="toggleAcc(this)">過馬路 / 走路規矩 <span class="arrow">▶</span></div>
+    <div class="acc-body">
+      <p>• <b>絕對要走斑馬線!</b>不要為了抄近路穿越馬路(叫 jaywalking,會被罰款,溫哥華有警察取締)</p>
+      <p>• 大多紅綠燈要 <b>按一下牆上的按鈕</b>,小綠人才會亮</p>
+      <p>• 看到「WALK」/小綠人 → 可以過;看到「DON'T WALK」/紅手 → 等</p>
+      <p>• 倒數計時是「給已經在過的人走完」, <b>不要在倒數時開始過</b></p>
+      <p>• 在郊區或步道上,人行道沒裝路燈,夜間不要走</p>
+    </div>
+  </div>
+
+  <div class="accordion">
+    <div class="acc-header" onclick="toggleAcc(this)">廁所 / 飲水 <span class="arrow">▶</span></div>
+    <div class="acc-body">
+      <p>• 廁所叫 <b>Restroom</b> 或 <b>Washroom</b>(加拿大常用)</p>
+      <p>• <b>路上很少免費廁所</b>!出門前先用,在景點、商場、星巴克使用</p>
+      <p>• 星巴克、麥當勞:消費後可問店員密碼進入(密碼通常印在發票上)</p>
+      <p>• <b>自來水可以喝</b>,溫哥華水質很好。可以帶水壺裝水,飯店、機場、商場都有飲水機</p>
+      <p>• 餐廳:坐下後服務生會問 "Water?",點頭就會免費供應冰水</p>
+    </div>
+  </div>
+
+  <div class="accordion">
+    <div class="acc-header" onclick="toggleAcc(this)">餐廳用餐流程 <span class="arrow">▶</span></div>
+    <div class="acc-body">
+      <p><b>1. 等帶位:</b>進門後 <b>站在「Please Wait to be Seated」牌子旁</b>等服務生帶你入座,不要自己找位子</p>
+      <p><b>2. 點餐:</b>同一個服務生會負責你整桌(他/她會自我介紹名字)</p>
+      <p><b>3. 加水:</b>水杯空了,服務生會自動來加,免費</p>
+      <p><b>4. 結帳:</b>說 "Check, please" 或舉手示意,帳單會送到桌上,不用走到櫃檯</p>
+      <p><b>5. 給小費:</b>放在桌上(現金)或刷卡時選擇</p>
+      <div class="callout">
+        <strong>份量很大!</strong>
+        美加餐點份量是台灣 1.5~2 倍,建議兩位長輩共點一份+加點湯/沙拉。吃不完可以說 "To go, please" 打包帶走。
+      </div>
+    </div>
+  </div>
+
+  <div class="accordion">
+    <div class="acc-header" onclick="toggleAcc(this)">郵輪船上禮節 <span class="arrow">▶</span></div>
+    <div class="acc-body">
+      <p>• <b>每天會在房間放當日節目單</b> (Daily Program / Princess Patter / Compass) — 一定要看</p>
+      <p>• <b>船上時間 vs 港口時間</b>有時不同,以船上時間為準</p>
+      <p>• <b>正式之夜 (Formal Night):</b>晚餐穿正式一點,但不強制</p>
+      <p>• <b>主餐廳座位:</b>固定時段(傳統用餐)或自由(任何時段),以登船時收到的卡為準</p>
+      <p>• <b>消費全靠船卡</b>,船上不收現金,離船結算</p>
+      <p>• <b>下船觀光:</b>準時回船!船不等人,郵輪離港時間是「船上時間」</p>
+      <div class="callout danger">
+        <strong>非常重要</strong>
+        下船時記得 <b>帶好船卡 + 證件影本</b>。回船刷卡進入,沒帶就上不了船。手機照下護照首頁存起來備用。
+      </div>
+    </div>
+  </div>
+
+  <div class="accordion">
+    <div class="acc-header" onclick="toggleAcc(this)">與當地人互動 <span class="arrow">▶</span></div>
+    <div class="acc-body">
+      <p>• 北美人 <b>愛打招呼</b>:進電梯、店員會說 "Hi, how are you?" → 回 "Good, thank you" 即可</p>
+      <p>• <b>排隊文化嚴格</b>,絕對不要插隊,即使只差一個人</p>
+      <p>• 開門時若後面有人,會 <b>幫忙扶住門</b>,記得說 "Thank you"</p>
+      <p>• 人和人講話 <b>距離較遠</b>(約一個手臂),不要太靠近</p>
+      <p>• <b>不要大聲講電話</b>,尤其餐廳、火車、巴士</p>
+      <p>• 跟陌生人 <b>不問年齡、薪水、婚姻狀況</b></p>
+    </div>
+  </div>
+
+  <div class="accordion">
+    <div class="acc-header" onclick="toggleAcc(this)">溫哥華 / 加拿大 特殊事項 <span class="arrow">▶</span></div>
+    <div class="acc-body">
+      <p>• <b>溫哥華華人非常多</b>(列治文/Richmond 區尤其多),很多店有中文服務</p>
+      <p>• <b>大麻已合法</b>(19歲以上),路上有時會聞到味道,不必驚慌,別讓孫輩聞</p>
+      <p>• 加拿大用 <b>加幣</b>(CAD),美國用 <b>美金</b>(USD),郵輪船上以 <b>美金</b>計</p>
+      <p>• 加拿大電壓 110V,跟台灣一樣,插頭也一樣可直接用</p>
+      <p>• 5月~9月 溫哥華氣溫 15~25°C,早晚涼,洋蔥式穿搭</p>
+      <p>• 阿拉斯加冰河區更冷,需備外套、毛帽、手套(船上會發送毛毯)</p>
+    </div>
+  </div>
+</div>
+
+<!-- ====== 緊急應對 ====== -->
+<div id="emergency" class="section">
+  <div class="section-header">
+    <button class="back-btn" onclick="showSection('home')">← 返回</button>
+    <div class="section-title">緊急應對專家</div>
+  </div>
+
+  <div class="callout danger">
+    <strong>真的危急時,先打 911</strong>
+    美國、加拿大都用 <b>911</b>。不會英文也要打,接線員會幫你轉中文翻譯(說 "Chinese / Mandarin")。
+  </div>
+
+  <a href="tel:911" class="call-btn">
+    撥打 911 (報警/救護車/火災)
+    <span class="num">9 1 1</span>
+  </a>
+
+  <a href="tel:+16043778730" class="call-btn green">
+    台灣駐溫哥華辦事處 急難救助
+    <span class="num">+1 604-377-8730</span>
+  </a>
+
+  <a href="tel:0118000885088" class="call-btn blue">
+    旅外國人急難全球免付費
+    <span class="num">011 800 0885 0885</span>
+  </a>
+
+  <div class="callout">
+    <strong>怎麼打電話?</strong>
+    在郵輪/飯店房間電話 → 先按外線鍵 → 撥號;手機直撥即可。台灣的 0800 在國外撥要改成 011-800。
+  </div>
+
+  <div class="accordion">
+    <div class="acc-header" onclick="toggleAcc(this)">護照遺失怎麼辦? <span class="arrow">▶</span></div>
+    <div class="acc-body">
+      <p><b>步驟一:</b>立刻到當地警察局報案,索取 <b>報案證明 (Police Report)</b></p>
+      <p><b>步驟二:</b>聯絡駐溫哥華台北經濟文化辦事處</p>
+      <div class="info-row">
+        <div class="label">地址</div>
+        <div class="value">Suite 2200, 650 W. Georgia St., Vancouver</div>
+      </div>
+      <div class="info-row">
+        <div class="label">電話</div>
+        <div class="value"><a href="tel:+16046894111">+1 604-689-4111</a></div>
+      </div>
+      <div class="info-row">
+        <div class="label">急難救助</div>
+        <div class="value"><a href="tel:+16043778730">+1 604-377-8730</a>(限緊急)</div>
+      </div>
+      <p><b>步驟三:</b>申請 <b>入國證明書</b>(回台用)或 <b>護照補發</b></p>
+      <p><b>需要的文件:</b>身分證影本、相片、報案證明</p>
+      <div class="callout success">
+        <strong>事先準備</strong>
+        出發前 <b>把護照首頁拍照存手機/雲端</b>,並用紙本影印一份放行李,可以加速補辦。
+      </div>
+    </div>
+  </div>
+
+  <div class="accordion">
+    <div class="acc-header" onclick="toggleAcc(this)">錢包/信用卡被偷 <span class="arrow">▶</span></div>
+    <div class="acc-body">
+      <p><b>步驟一:</b>立刻打回台灣銀行掛失信用卡(集中卡片背面有客服電話)</p>
+      <p><b>步驟二:</b>到當地警察局報案,取得 Police Report(回台向保險公司理賠用)</p>
+      <p><b>步驟三:</b>若還需用卡,請家人從台灣 <b>緊急匯款 (Western Union 西聯匯款)</b> 給你</p>
+      <div class="callout">
+        <strong>事先準備</strong>
+        分散風險:現金分兩處放;備用卡放在不同行李;記下緊急聯絡人(子女)的電話和銀行客服電話。
+      </div>
+    </div>
+  </div>
+
+  <div class="accordion">
+    <div class="acc-header" onclick="toggleAcc(this)">人在郵輪上的緊急狀況 <span class="arrow">▶</span></div>
+    <div class="acc-body">
+      <p><b>船上總機:</b>房間電話按 <b>0</b> 或 <b>911</b>(船內專線,非報警)</p>
+      <p><b>船上保安:</b>找最近的工作人員,說 "Security, please"</p>
+      <p><b>船上醫療:</b>每艘船都有醫療中心(通常 Deck 4-5),24小時駐診</p>
+      <p><b>失蹤同伴:</b>到 <b>Guest Services 客服中心</b>請廣播尋人</p>
+      <p><b>東西忘在港口岸上:</b>船離港後幾乎拿不回,但可請 Guest Services 幫忙詢問港口辦公室</p>
+      <div class="callout danger">
+        <strong>來不及上船!</strong>
+        若郵輪已開,立刻聯絡郵輪公司港口代理 (Port Agent — 名單在每日節目單最後一頁),他們會協助安排你坐車或飛機到下一個港口會合。<br>
+        <b>絕對不要自己決定放棄繼續行程,先打給 Port Agent。</b>
+      </div>
+    </div>
+  </div>
+
+  <div class="accordion">
+    <div class="acc-header" onclick="toggleAcc(this)">迷路了怎麼辦? <span class="arrow">▶</span></div>
+    <div class="acc-body">
+      <p><b>1. 不要慌,找安全的地方坐下</b>(咖啡店、書店、商場),不要在街角徘徊</p>
+      <p><b>2. 開手機 Google Maps</b> → 看自己藍點 → 看飯店在哪 → 點「路線」走回</p>
+      <p><b>3. 找警察、店員、旅館前台問路</b>(可出示翻譯助手裡的卡片)</p>
+      <p><b>4. 叫 Uber / Lyft</b> 是最簡單的方法 — 只需要在 App 輸入飯店地址,司機就會來接</p>
+      <p><b>5. 若沒網路:</b>路邊找有 Wifi 的咖啡廳(星巴克、Tim Hortons)連上後再查</p>
+      <div class="callout success">
+        <strong>事先準備</strong>
+        出門前在 Google Maps 上 <b>下載溫哥華離線地圖</b> → 沒網路也能用,長輩比較不用擔心漫遊費。
+      </div>
+    </div>
+  </div>
+
+  <div class="accordion">
+    <div class="acc-header" onclick="toggleAcc(this)">常見詐騙 / 危險地帶 <span class="arrow">▶</span></div>
+    <div class="acc-body">
+      <p><b>溫哥華要避開的區域:</b></p>
+      <p>• <b>Hastings & Main 一帶 (Downtown Eastside)</b> — 街友、毒品問題嚴重,白天也不要去,跟唐人街(Chinatown)只隔一條街,要小心</p>
+      <p><b>常見伎倆:</b></p>
+      <p>• 假裝問路或要簽名請願,趁機扒走錢包</p>
+      <p>• ATM 旁有人「好心教學」,記下密碼</p>
+      <p>• 街頭問你能不能換零錢,趁機掉包</p>
+      <p><b>防範:</b></p>
+      <p>• 錢包放胸前包包,不要放後口袋</p>
+      <p>• 大鈔不要露白,結帳前先把錢分好</p>
+      <p>• 有人接近就大聲說 "No" 並走開</p>
+    </div>
+  </div>
+
+  <div class="accordion">
+    <div class="acc-header" onclick="toggleAcc(this)">天然災害 (地震/海嘯) <span class="arrow">▶</span></div>
+    <div class="acc-body">
+      <p><b>地震:</b>太平洋西北岸偶有地震,但多為小震。若搖晃 → <b>「趴下、掩護、穩住」</b>(Drop, Cover, Hold On)。躲到桌下,遠離窗戶。</p>
+      <p><b>海嘯:</b>港口或郵輪上有警報,聽從指示往高處走。</p>
+      <p><b>暴雨/濃霧:</b>常見於溫哥華,郵輪可能改變航線(冰河灣天氣不好就會跳過),不要失望,船上活動很多。</p>
+    </div>
+  </div>
+</div>
+
+<!-- ====== 醫療專家 ====== -->
+<div id="medical" class="section">
+  <div class="section-header">
+    <button class="back-btn" onclick="showSection('home')">← 返回</button>
+    <div class="section-title">醫療專家</div>
+  </div>
+
+  <div class="callout danger">
+    <strong>美加醫療超貴!一定要買旅平險</strong>
+    急診一次數千美金,郵輪上看醫生一次約 USD 100-300,藥物另計。出國前 <b>務必</b>買含醫療的旅遊平安險,並把保單號碼/急難電話存手機。
+  </div>
+
+  <div class="accordion">
+    <div class="acc-header" onclick="toggleAcc(this)" style="border-left-color:#7c3aed;">
+      <b style="color:#7c3aed;">★ 必備:中英文病歷卡(出示給醫師看)</b><span class="arrow">▶</span>
+    </div>
+    <div class="acc-body">
+      <div class="callout">
+        <strong>請填好以下資訊,印出或截圖存手機</strong>
+        遇到緊急狀況時,直接拿給醫師/救護員看,溝通最快速。
+      </div>
+      <div class="info-row">
+        <div class="label">姓名 / Name</div>
+        <div class="value">________________</div>
+      </div>
+      <div class="info-row">
+        <div class="label">出生年月日 / DOB</div>
+        <div class="value">________________</div>
+      </div>
+      <div class="info-row">
+        <div class="label">血型 / Blood Type</div>
+        <div class="value">________________</div>
+      </div>
+      <div class="info-row">
+        <div class="label">過敏 / Allergies</div>
+        <div class="value">食物: ________ 藥物: ________</div>
+      </div>
+      <div class="info-row">
+        <div class="label">慢性病 / Chronic Conditions</div>
+        <div class="value">高血壓 (Hypertension) / 糖尿病 (Diabetes) / 心臟病 (Heart Disease) / 中風 (Stroke) / 其他: ____</div>
+      </div>
+      <div class="info-row">
+        <div class="label">服用藥物 / Current Medications</div>
+        <div class="value">藥名 (English): ________  劑量 (Dose): ________  頻率 (Frequency): ________</div>
+      </div>
+      <div class="info-row">
+        <div class="label">手術紀錄 / Past Surgeries</div>
+        <div class="value">________________</div>
+      </div>
+      <div class="info-row">
+        <div class="label">緊急聯絡人 / Emergency Contact</div>
+        <div class="value">姓名: ________ 關係: ________ 電話: ________</div>
+      </div>
+      <div class="info-row">
+        <div class="label">保險公司 / Travel Insurance</div>
+        <div class="value">公司: ________ 保單號: ________ 24h 專線: ________</div>
+      </div>
+      <button class="phrase-show-btn" onclick="window.print()" style="margin-top:12px;background:#7c3aed;">列印此頁</button>
+    </div>
+  </div>
+
+  <div class="accordion">
+    <div class="acc-header" onclick="toggleAcc(this)">慢性病用藥 — 出發前準備 <span class="arrow">▶</span></div>
+    <div class="acc-body">
+      <p><b>1. 帶足全行程的藥</b> + <b>多帶 5-7 天備用</b>(萬一行程延誤)</p>
+      <p><b>2. 藥裝原始藥盒裡</b>,標籤完整(海關抽查時可證明)</p>
+      <p><b>3. 請醫生開英文處方箋</b>(英文藥名 + 劑量),一份隨身,一份放行李</p>
+      <p><b>4. 隨身行李帶藥</b>,不要全放託運(行李遺失就糟了)</p>
+      <p><b>5. 製作中英文用藥清單卡</b>(見上面病歷卡)</p>
+      <div class="callout">
+        <strong>常見慢性病藥英文名</strong>
+        高血壓 → Antihypertensive (Amlodipine 脈優, Losartan 可悅您)<br>
+        糖尿病 → Antidiabetic (Metformin 庫魯化錠)<br>
+        膽固醇 → Statin (Atorvastatin 立普妥, Crestor 冠脂妥)<br>
+        心臟 → Beta-blocker (Bisoprolol)<br>
+        抗凝血 → Anticoagulant (Warfarin 可邁丁, Aspirin 阿斯匹靈)
+      </div>
+    </div>
+  </div>
+
+  <div class="accordion">
+    <div class="acc-header" onclick="toggleAcc(this)">藥房可以買到的常用藥 <span class="arrow">▶</span></div>
+    <div class="acc-body">
+      <p><b>溫哥華主要藥房:</b><b>Shoppers Drug Mart</b>、<b>London Drugs</b>、<b>Pharmasave</b>(招牌都很大)</p>
+      <p><b>感冒/退燒:</b>Tylenol(普拿疼)、Advil(布洛芬)</p>
+      <p><b>胃痛/消化不良:</b>Pepto-Bismol(粉色)、Tums(咀嚼片)</p>
+      <p><b>過敏/鼻塞:</b>Benadryl、Claritin、Reactine</p>
+      <p><b>止瀉:</b>Imodium</p>
+      <p><b>暈船/暈車:</b>Gravol、Bonine、Dramamine(郵輪藥房也賣)</p>
+      <p><b>失眠:</b>Melatonin(褪黑激素,加幣很便宜)</p>
+      <p><b>OK繃 / 棉花棒 / 體溫計:</b>都有,叫 Band-Aid / Cotton Swabs / Thermometer</p>
+      <div class="callout success">
+        <strong>實用秘訣</strong>
+        藥房裡藥師可以諮詢(免費),英文不會就指上面的中文名,他會幫你找。藥師背後通常有處方藥需要醫師證明。
+      </div>
+    </div>
+  </div>
+
+  <div class="accordion">
+    <div class="acc-header" onclick="toggleAcc(this)">什麼狀況該就醫? <span class="arrow">▶</span></div>
+    <div class="acc-body">
+      <p><b>立刻 911 / 急診:</b></p>
+      <p>• 胸痛、呼吸困難、心律不整</p>
+      <p>• 突然頭暈、口齒不清、半邊無力(中風徵兆)</p>
+      <p>• 跌倒撞到頭、骨折、大量出血</p>
+      <p>• 高燒不退超過 39°C</p>
+      <p>• 嚴重過敏(蕁麻疹+喉嚨腫)</p>
+      <p><b>看門診 (Walk-in Clinic):</b></p>
+      <p>• 一般感冒、輕微腸胃不適、皮膚問題</p>
+      <p>• 慢性藥用完了需要再開</p>
+      <p><b>找藥房諮詢:</b></p>
+      <p>• 輕微頭痛、便秘、腹瀉、失眠、過敏</p>
+    </div>
+  </div>
+
+  <div class="accordion">
+    <div class="acc-header" onclick="toggleAcc(this)">溫哥華主要醫院 <span class="arrow">▶</span></div>
+    <div class="acc-body">
+      <div class="info-row">
+        <div class="label">Vancouver General Hospital (溫哥華總醫院)</div>
+        <div class="value">899 W 12th Ave, Vancouver<br>急診 24h<br><a href="tel:+16048754111">+1 604-875-4111</a></div>
+      </div>
+      <div class="info-row">
+        <div class="label">St. Paul's Hospital (聖保羅醫院)</div>
+        <div class="value">1081 Burrard St, Vancouver(市中心,離郵輪碼頭近)<br>急診 24h<br><a href="tel:+16046822344">+1 604-682-2344</a></div>
+      </div>
+      <div class="info-row">
+        <div class="label">Richmond Hospital (列治文醫院 — 有中文服務)</div>
+        <div class="value">7000 Westminster Hwy, Richmond<br><a href="tel:+16042782161">+1 604-278-2161</a></div>
+      </div>
+      <div class="info-row">
+        <div class="label">Walk-in Clinic 推薦 (不用預約看診)</div>
+        <div class="value">搜尋 <b>"walk-in clinic near me"</b>。市中心多間在 Robson St / Davie St 附近</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="accordion">
+    <div class="acc-header" onclick="toggleAcc(this)">郵輪上看醫生 <span class="arrow">▶</span></div>
+    <div class="acc-body">
+      <p>• 每艘船有 <b>Medical Center(醫療中心)</b>,通常 Deck 4 或 Deck 5</p>
+      <p>• 開放時段每天 8-10am, 4-6pm 左右,其他時段急診打 911(船內專線)</p>
+      <p>• 看診費約 <b>USD 100-300</b>,藥物另計,先付費再申請保險</p>
+      <p>• 暈船很常見:可在郵輪 Guest Services 索取 <b>免費暈船藥</b>(粉紅色 Bonine)</p>
+      <p>• 嚴重狀況時船醫可決定就近港口下船送醫</p>
+      <div class="callout">
+        <strong>暈船預防</strong>
+        • 上船第一天先到 Guest Services 拿一條暈船貼或藥<br>
+        • 房間選 <b>船中段、低樓層</b>較不晃<br>
+        • 多到甲板透氣、看遠方<br>
+        • 不要空腹也不要太飽
+      </div>
+    </div>
+  </div>
+
+  <div class="accordion">
+    <div class="acc-header" onclick="toggleAcc(this)">緊急醫療翻譯卡 (給醫師看) <span class="arrow">▶</span></div>
+    <div class="acc-body">
+      <div class="phrase">
+        <div class="zh">我有高血壓。我每天吃 Amlodipine 5mg。</div>
+        <div class="en">I have hypertension. I take Amlodipine 5mg daily.</div>
+        <button class="phrase-show-btn" onclick="showFullCard('I have hypertension. I take Amlodipine 5mg daily.', '我有高血壓 (請依實際情況修改藥名)')">給醫師看</button>
+      </div>
+      <div class="phrase">
+        <div class="zh">我有糖尿病。我打/吃 ___。</div>
+        <div class="en">I am diabetic. I take/inject ___.</div>
+        <button class="phrase-show-btn" onclick="showFullCard('I am diabetic. I take/inject ___.', '我有糖尿病')">給醫師看</button>
+      </div>
+      <div class="phrase">
+        <div class="zh">我心臟有問題,有裝支架/吃抗凝血劑。</div>
+        <div class="en">I have a heart condition, with a stent / I take blood thinners.</div>
+        <button class="phrase-show-btn" onclick="showFullCard('I have a heart condition. I have a stent and take blood thinners (Warfarin / Aspirin).', '我心臟有問題,有裝支架/吃抗凝血劑')">給醫師看</button>
+      </div>
+      <div class="phrase">
+        <div class="zh">我對 ___ 過敏。</div>
+        <div class="en">I am allergic to ___.</div>
+        <button class="phrase-show-btn" onclick="showFullCard('I am allergic to: ___ (please write down).', '我對某些東西過敏')">給醫師看</button>
+      </div>
+      <div class="phrase">
+        <div class="zh">這是我的用藥清單,請看。</div>
+        <div class="en">Here is my medication list. Please review.</div>
+        <button class="phrase-show-btn" onclick="showFullCard('Here is my medication list. Please review.', '這是我的用藥清單')">給醫師看</button>
+      </div>
+      <div class="phrase">
+        <div class="zh">我胸痛 / 呼吸困難 / 頭暈 / 跌倒。</div>
+        <div class="en">I have chest pain / difficulty breathing / dizziness / I fell.</div>
+        <button class="phrase-show-btn" onclick="showFullCard('I have chest pain / difficulty breathing / dizziness / I fell down.', '症狀說明')">給醫師看</button>
+      </div>
+      <div class="phrase">
+        <div class="zh">請聯絡我的家人(電話在下面)。</div>
+        <div class="en">Please contact my family (number below).</div>
+        <button class="phrase-show-btn" onclick="showFullCard('Please contact my family. Phone: __________', '請聯絡我的家人')">給醫師看</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ====== 行程規劃 ====== -->
+<div id="itinerary" class="section">
+  <div class="section-header">
+    <button class="back-btn" onclick="showSection('home')">← 返回</button>
+    <div class="section-title">行程規劃師</div>
+  </div>
+
+  <div class="callout">
+    <strong>2026/5/8 ~ 5/19 行程概要</strong>
+    溫哥華 2 晚(住 Aercorn Hotel)→ Royal Caribbean 海洋旋律號 7 晚(5/10-5/17)→ 溫哥華 2 晚 → 5/19 返台<br>
+    停靠港:Sitka → Juneau → Hoonah/Icy Strait → Ketchikan
+  </div>
+
+  <div class="btn-group">
+    <button class="sub-btn active" onclick="switchItin('van1', this)">溫哥華 5/8-5/9</button>
+    <button class="sub-btn" onclick="switchItin('cruise', this)">郵輪 5/10-5/17</button>
+    <button class="sub-btn" onclick="switchItin('van2', this)">溫哥華 5/17-5/19</button>
+    <button class="sub-btn" onclick="switchItin('tips', this)">通用貼士</button>
+  </div>
+
+  <div id="itin-content"></div>
+</div>
+
+<!-- ====== 找回家人 / 走失應對 ====== -->
+<div id="lost" class="section">
+  <div class="section-header">
+    <button class="back-btn" onclick="showSection('home')">← 返回</button>
+    <div class="section-title">找回家人</div>
+  </div>
+
+  <!-- 我在這裡 主功能 -->
+  <div class="locate-card">
+    <div style="font-size:18px;font-weight:700;margin-bottom:10px;">📍 我在這裡 — 一鍵分享位置</div>
+    <div style="font-size:14px;opacity:0.95;margin-bottom:12px;">點下方按鈕,允許定位後,可以把目前位置傳給家人</div>
+    <button class="locate-btn" id="locate-btn" onclick="getMyLocation()">取得我目前位置</button>
+    <div class="locate-result" id="locate-result"></div>
+    <div class="locate-status" id="locate-status"></div>
+  </div>
+
+  <!-- 走失應對 SOP -->
+  <div class="callout danger">
+    <strong>走失了該怎麼辦?(請冷靜,按順序做)</strong>
+  </div>
+  <div class="accordion">
+    <div class="acc-header" onclick="toggleAcc(this)" style="border-left-color:#dc2626;">第 1 步:停下,別亂走 <span class="arrow">▶</span></div>
+    <div class="acc-body">
+      <p>• <b>站在原地 30 秒</b>,環顧四周,可能家人就在附近</p>
+      <p>• 如果還在剛才的店家、景點裡,先繞一圈再離開</p>
+      <p>• 不要因為慌張往奇怪方向跑</p>
+    </div>
+  </div>
+  <div class="accordion">
+    <div class="acc-header" onclick="toggleAcc(this)" style="border-left-color:#ea580c;">第 2 步:找安全的地方坐下 <span class="arrow">▶</span></div>
+    <div class="acc-body">
+      <p>• 找 <b>有店員的地方</b>:咖啡店(星巴克、Tim Hortons)、便利商店、藥房、書店</p>
+      <p>• 不要在街角站太久(怕不安全)</p>
+      <p>• 坐下後深呼吸,拿出手機</p>
+    </div>
+  </div>
+  <div class="accordion">
+    <div class="acc-header" onclick="toggleAcc(this)" style="border-left-color:#0891b2;">第 3 步:用本助手分享位置 <span class="arrow">▶</span></div>
+    <div class="acc-body">
+      <p>• 回到本頁(找回家人),按 <b>「取得我目前位置」</b></p>
+      <p>• 允許瀏覽器使用定位</p>
+      <p>• 按 <b>「分享給家人」</b> → 選 LINE / 簡訊 / Email,把位置傳出去</p>
+      <p>• 或按 <b>「複製連結」</b>,自己貼到 LINE</p>
+    </div>
+  </div>
+  <div class="accordion">
+    <div class="acc-header" onclick="toggleAcc(this)" style="border-left-color:#2563eb;">第 4 步:撥打家人電話 <span class="arrow">▶</span></div>
+    <div class="acc-body">
+      <p>• 在下方「家人聯絡」直接點擊撥打</p>
+      <p>• 告訴家人:「我走失了,我現在在 ___(店名/路名),我會在這裡等你」</p>
+      <p>• 把位置傳出去後,留在原地等</p>
+    </div>
+  </div>
+  <div class="accordion">
+    <div class="acc-header" onclick="toggleAcc(this)" style="border-left-color:#7c3aed;">第 5 步:若 30 分鐘內找不到 → 前往集合點 <span class="arrow">▶</span></div>
+    <div class="acc-body">
+      <p>• 看下方「預設集合點」,前往最近的</p>
+      <p>• 主要集合點:<b>Aercorn Hotel 飯店大廳</b>(在溫哥華時)</p>
+      <p>• 若在郵輪上:<b>Guest Services 客服中心 Deck 4</b></p>
+      <p>• 若在港口:<b>郵輪碼頭/Tender 接駁碼頭</b></p>
+    </div>
+  </div>
+  <div class="accordion">
+    <div class="acc-header" onclick="toggleAcc(this)" style="border-left-color:#dc2626;">第 6 步:緊急狀況才打 911 <span class="arrow">▶</span></div>
+    <div class="acc-body">
+      <p>• <b>911 是生命危險時用</b>(受傷、被搶、迷路超過 2 小時找不到家人)</p>
+      <p>• 一般走失先用上面 1-5 步處理</p>
+      <p>• 走失但人安全 → 不必撥 911,可請店員或飯店幫忙</p>
+    </div>
+  </div>
+
+  <!-- 集合點 -->
+  <div class="callout success" style="margin-top:16px;">
+    <strong>📍 預設集合點 — 走失時往這裡走</strong>
+    若手機沒電/沒信號,以下地點是「無聲約定」的會合處。請與家人 <b>事先約好</b>。
+  </div>
+
+  <div class="rendez-card">
+    <div class="area">溫哥華 — 主集合點</div>
+    <div class="place">Aercorn Hotel(住宿飯店)</div>
+    <div class="desc">大廳 Lobby。前台會說中文(列治文/亞裔員工常見),可請他們幫忙廣播或打電話到房間</div>
+    <a href="https://www.google.com/maps/search/Aercorn+Hotel+Vancouver" target="_blank">在 Google Maps 看</a>
+  </div>
+  <div class="rendez-card">
+    <div class="area">溫哥華 — 第二集合點</div>
+    <div class="place">Canada Place 加拿大廣場</div>
+    <div class="desc">郵輪碼頭主入口前的旗桿廣場。地標明顯,有警衛和遊客中心</div>
+    <a href="https://www.google.com/maps/search/Canada+Place+Vancouver" target="_blank">在 Google Maps 看</a>
+  </div>
+  <div class="rendez-card">
+    <div class="area">郵輪上 — 主集合點</div>
+    <div class="place">Guest Services 客服中心(Deck 4 中庭 Centrum)</div>
+    <div class="desc">船員 24h 駐點,可廣播尋人、查房號、發備用船卡。「I'm looking for my family.」</div>
+  </div>
+  <div class="rendez-card">
+    <div class="area">郵輪上 — 第二集合點</div>
+    <div class="place">自己的房間</div>
+    <div class="desc">最簡單:回房間等。把房號寫在紙上放錢包,別忘記</div>
+  </div>
+  <div class="rendez-card">
+    <div class="area">5/12 Sitka 錫特卡</div>
+    <div class="place">Tender Dock 接駁碼頭</div>
+    <div class="desc">下船的地方就是回船的地方。看到郵輪小船的就對了。最後接駁船 17:30</div>
+    <a href="https://www.google.com/maps/search/Sitka+Cruise+Tender+Dock" target="_blank">在 Google Maps 看</a>
+  </div>
+  <div class="rendez-card">
+    <div class="area">5/13 Juneau 朱諾</div>
+    <div class="place">郵輪碼頭主入口(Cruise Ship Terminal)</div>
+    <div class="desc">朱諾港是直接靠岸,主入口有大型「Welcome to Juneau」招牌。21:00 前一定要回</div>
+    <a href="https://www.google.com/maps/search/Juneau+Cruise+Terminal" target="_blank">在 Google Maps 看</a>
+  </div>
+  <div class="rendez-card">
+    <div class="area">5/14 Hoonah / Icy Strait</div>
+    <div class="place">Icy Strait Point 接待中心</div>
+    <div class="desc">下船後第一個建築。有圖騰柱和遊客中心。最晚 14:30 回船</div>
+    <a href="https://www.google.com/maps/search/Icy+Strait+Point" target="_blank">在 Google Maps 看</a>
+  </div>
+  <div class="rendez-card">
+    <div class="area">5/15 Ketchikan 凱奇坎</div>
+    <div class="place">郵輪碼頭主廣場(Berth 1-4 入口)</div>
+    <div class="desc">直接靠岸,有大型遊客中心和地圖看板。17:30 前回船</div>
+    <a href="https://www.google.com/maps/search/Ketchikan+Cruise+Terminal" target="_blank">在 Google Maps 看</a>
+  </div>
+
+  <!-- 家人聯絡 -->
+  <div class="callout" style="margin-top:16px;">
+    <strong>📞 家人聯絡(可一鍵撥號)</strong>
+    ⚠ 下方號碼是範例,請先編輯本檔案把號碼改成實際家人的(把 09xxxxxxxx 改成正確號碼)
+  </div>
+
+  <div class="contact-card">
+    <div class="name">兒子 / 兒子的太太</div>
+    <div class="role">主要聯絡人 · 在台灣</div>
+    <div class="actions">
+      <a href="tel:+886912345678" class="green">📞 撥電話</a>
+      <a href="sms:+886912345678?body=%E6%88%91%E8%B5%B0%E5%A4%B1%E4%BA%86%2C%E5%9C%A8%E9%80%99%E8%A3%A1%3A%20" class="purple">💬 簡訊</a>
+      <a href="https://line.me/" target="_blank">LINE</a>
+    </div>
+  </div>
+  <div class="contact-card">
+    <div class="name">女兒</div>
+    <div class="role">備用聯絡人 · 在台灣</div>
+    <div class="actions">
+      <a href="tel:+886987654321" class="green">📞 撥電話</a>
+      <a href="sms:+886987654321?body=%E6%88%91%E8%B5%B0%E5%A4%B1%E4%BA%86%2C%E5%9C%A8%E9%80%99%E8%A3%A1%3A%20" class="purple">💬 簡訊</a>
+      <a href="https://line.me/" target="_blank">LINE</a>
+    </div>
+  </div>
+  <div class="contact-card">
+    <div class="name">同行家人(郵輪同房)</div>
+    <div class="role">就在身邊 / 同船</div>
+    <div class="actions">
+      <a href="tel:+886900000000" class="green">📞 撥電話</a>
+      <a href="sms:+886900000000?body=%E6%88%91%E5%9C%A8%E9%80%99%E8%A3%A1%3A%20" class="purple">💬 簡訊</a>
+      <a href="https://line.me/" target="_blank">LINE</a>
+    </div>
+  </div>
+
+  <!-- 行前約定建議 -->
+  <div class="callout success" style="margin-top:16px;">
+    <strong>★ 出發前要做的 6 件事(很重要)</strong>
+  </div>
+  <div class="accordion">
+    <div class="acc-header" onclick="toggleAcc(this)" style="border-left-color:#059669;">1. 約定每日「三次集合」 <span class="arrow">▶</span></div>
+    <div class="acc-body">
+      <p>例如:</p>
+      <p>• <b>早餐 08:00</b>(自助餐廳 Windjammer)</p>
+      <p>• <b>晚餐 18:00</b>(主餐廳 Reflections)</p>
+      <p>• <b>晚上 22:00</b> 回房間</p>
+      <p>沒按時出現就知道有狀況,可以開始找</p>
+    </div>
+  </div>
+  <div class="accordion">
+    <div class="acc-header" onclick="toggleAcc(this)" style="border-left-color:#059669;">2. 互換船卡照片 <span class="arrow">▶</span></div>
+    <div class="acc-body">
+      <p>• 每個人船卡(SeaPass)上有姓名 + 房號</p>
+      <p>• 全家互拍對方的船卡照片存手機,萬一掉了能告知 Guest Services</p>
+    </div>
+  </div>
+  <div class="accordion">
+    <div class="acc-header" onclick="toggleAcc(this)" style="border-left-color:#059669;">3. 把重要資訊寫小紙片放錢包 <span class="arrow">▶</span></div>
+    <div class="acc-body">
+      <p>用一張小紙片(信用卡大小),用大字寫上:</p>
+      <p>• 自己姓名(中英文)</p>
+      <p>• 飯店名:Aercorn Hotel, Vancouver</p>
+      <p>• 郵輪船名:Serenade of the Seas + 自己房號</p>
+      <p>• 家人台灣電話 + 在台灣聯絡人姓名</p>
+      <p>• 「If lost, please help me call this number 如果走失,請幫我打這個電話」</p>
+    </div>
+  </div>
+  <div class="accordion">
+    <div class="acc-header" onclick="toggleAcc(this)" style="border-left-color:#059669;">4. 設定 LINE 即時位置分享 <span class="arrow">▶</span></div>
+    <div class="acc-body">
+      <p>LINE 內建「分享位置」功能(會自動更新位置 1 小時):</p>
+      <p>• 開啟與家人的 LINE 聊天</p>
+      <p>• 點 + 號 → 位置 → 分享我的位置</p>
+      <p>• 選「分享 1 小時」,家人可以看到你即時移動</p>
+      <p>• <b>下船時就開啟,回船時關掉</b></p>
+    </div>
+  </div>
+  <div class="accordion">
+    <div class="acc-header" onclick="toggleAcc(this)" style="border-left-color:#059669;">5. 啟用「Find My」/「Find My Device」 <span class="arrow">▶</span></div>
+    <div class="acc-body">
+      <p><b>iPhone:</b> 設定 → 自己的名字 → 尋找 → 尋找我的 iPhone(打開)</p>
+      <p><b>Android:</b> 設定 → Google → 尋找我的裝置(打開)</p>
+      <p>在台灣的家人即使沒接到電話,也能透過 iCloud / Google 帳號看到長輩手機位置</p>
+      <p>★ <b>把長輩的 Apple ID / Google 帳號密碼寫下給家人</b></p>
+    </div>
+  </div>
+  <div class="accordion">
+    <div class="acc-header" onclick="toggleAcc(this)" style="border-left-color:#059669;">6. 預先下載離線地圖 <span class="arrow">▶</span></div>
+    <div class="acc-body">
+      <p>沒有網路時還能用:</p>
+      <p>• Google Maps → 右上頭像 → 離線地圖 → 選擇地圖 → 框出溫哥華 + 阿拉斯加各港口下載</p>
+      <p>• 每個港口下船前再開一次離線地圖確認可用</p>
+    </div>
+  </div>
+</div>
+
+<!-- 緊急按鈕 -->
+<div class="emergency-fab" onclick="showSection('emergency')">
+  緊急<br>應對
+</div>
+
+<!-- 找回家人按鈕 -->
+<div class="location-fab" onclick="showSection('lost')">
+  找家人<br>定位</div>
+
+<!-- 全螢幕卡片 -->
+<div class="fullcard-overlay" id="fullcard-overlay" onclick="if(event.target===this) closeFullCard()">
+  <div class="fullcard">
+    <button class="fullcard-close" onclick="closeFullCard()">×</button>
+    <div class="show-text" id="fullcard-text"></div>
+    <div class="show-zh" id="fullcard-zh"></div>
+    <div style="margin-top:18px;font-size:13px;color:#999;">把畫面拿給對方看</div>
+  </div>
+</div>
+
+<script>
+// ===== 翻譯資料 =====
+const PHRASES = {
+  basic: [
+    { zh: "你好", en: "Hello.", py: "哈囉" },
+    { zh: "謝謝", en: "Thank you.", py: "三克 you" },
+    { zh: "對不起 / 不好意思", en: "Excuse me. / Sorry.", py: "依克斯Q me / 搜瑞" },
+    { zh: "我不會說英文,請慢一點。", en: "I don't speak English. Please speak slowly.", py: "" },
+    { zh: "可以寫下來嗎?", en: "Can you write it down, please?", py: "" },
+    { zh: "請用 Google 翻譯給我看好嗎?", en: "Could you use Google Translate to show me, please?", py: "" },
+    { zh: "我聽不懂", en: "I don't understand.", py: "" },
+    { zh: "再說一次?", en: "Could you say that again?", py: "" },
+    { zh: "請問廁所在哪?", en: "Where is the restroom / washroom?", py: "" },
+    { zh: "我需要幫忙。", en: "I need help.", py: "" },
+    { zh: "請等一下。", en: "Just a moment, please.", py: "" },
+    { zh: "我來自台灣。", en: "I am from Taiwan.", py: "" }
+  ],
+  food: [
+    { zh: "兩位,謝謝。", en: "A table for two, please.", py: "" },
+    { zh: "請給我菜單。", en: "Menu, please.", py: "" },
+    { zh: "你們有中文菜單嗎?", en: "Do you have a Chinese menu?", py: "" },
+    { zh: "我要點這個。(指著菜單)", en: "I'd like this one, please. (point at menu)", py: "" },
+    { zh: "不要太辣 / 不要冰塊", en: "Not too spicy / No ice, please.", py: "" },
+    { zh: "我吃素", en: "I'm vegetarian.", py: "" },
+    { zh: "我對花生/海鮮/牛奶過敏", en: "I'm allergic to peanuts / seafood / dairy.", py: "" },
+    { zh: "請給我一杯熱水", en: "A cup of hot water, please.", py: "" },
+    { zh: "好吃!", en: "It's delicious!", py: "" },
+    { zh: "請給我帳單。", en: "Check, please.", py: "" },
+    { zh: "可以打包嗎?", en: "Can I take this to go?", py: "" },
+    { zh: "可以刷卡嗎?", en: "Can I pay by credit card?", py: "" }
+  ],
+  shop: [
+    { zh: "這個多少錢?", en: "How much is this?", py: "" },
+    { zh: "可以便宜一點嗎?(美加少議價)", en: "Is there any discount?", py: "" },
+    { zh: "我只是看看,謝謝。", en: "I'm just looking, thanks.", py: "" },
+    { zh: "可以試穿嗎?", en: "Can I try this on?", py: "" },
+    { zh: "有大一點/小一點的嗎?", en: "Do you have a bigger / smaller size?", py: "" },
+    { zh: "有別的顏色嗎?", en: "Do you have other colors?", py: "" },
+    { zh: "我要這個,謝謝。", en: "I'll take this, thanks.", py: "" },
+    { zh: "可以分開包嗎?", en: "Could you wrap them separately?", py: "" },
+    { zh: "請給我收據。", en: "Receipt, please.", py: "" },
+    { zh: "我要退貨。", en: "I'd like to return this.", py: "" }
+  ],
+  transport: [
+    { zh: "去這裡多少錢?(指地址)", en: "How much to this address? (point)", py: "" },
+    { zh: "請帶我去這裡。(指紙條)", en: "Please take me to this address. (show note)", py: "" },
+    { zh: "請開到 ____ 飯店。", en: "Please go to ____ Hotel.", py: "" },
+    { zh: "請停一下。", en: "Please stop here.", py: "" },
+    { zh: "這是去市區的車嗎?", en: "Does this go downtown?", py: "" },
+    { zh: "下一班車什麼時候?", en: "When is the next bus / train?", py: "" },
+    { zh: "我搭錯車了!", en: "I think I'm on the wrong bus!", py: "" },
+    { zh: "請告訴我什麼時候下車。", en: "Please tell me when to get off.", py: "" },
+    { zh: "離這裡最近的地鐵站在哪?", en: "Where is the nearest SkyTrain station?", py: "" }
+  ],
+  hotel: [
+    { zh: "我有訂房,姓 ____。", en: "I have a reservation under the name ____.", py: "" },
+    { zh: "可以早點 check-in 嗎?", en: "Can I check in early?", py: "" },
+    { zh: "Wi-Fi 密碼是多少?", en: "What's the Wi-Fi password?", py: "" },
+    { zh: "可以再給我一條毛巾/一個枕頭嗎?", en: "Can I have an extra towel / pillow?", py: "" },
+    { zh: "房間冷氣/熱水有問題。", en: "The AC / hot water in my room isn't working.", py: "" },
+    { zh: "可以幫我叫計程車嗎?", en: "Could you call a taxi for me?", py: "" },
+    { zh: "可以幫我寄放行李嗎?", en: "Can I store my luggage here?", py: "" },
+    { zh: "我把鑰匙忘在房間裡了。", en: "I locked myself out. My key is in the room.", py: "" },
+    { zh: "(郵輪)我的船卡掉了。", en: "I lost my cruise card.", py: "" },
+    { zh: "(郵輪)我房間在 ____ 號。", en: "My room number is ____.", py: "" }
+  ],
+  help: [
+    { zh: "請幫我打 911!", en: "Please call 911!", py: "" },
+    { zh: "我需要醫生!", en: "I need a doctor!", py: "" },
+    { zh: "我胸口痛 / 喘不過氣。", en: "I have chest pain / I can't breathe.", py: "" },
+    { zh: "我跌倒了,動不了。", en: "I fell. I can't move.", py: "" },
+    { zh: "我的錢包被偷了。", en: "My wallet was stolen.", py: "" },
+    { zh: "我迷路了。", en: "I'm lost.", py: "" },
+    { zh: "請幫我聯絡我家人。", en: "Please help me contact my family.", py: "" },
+    { zh: "我來自台灣,需要找台灣辦事處。", en: "I'm from Taiwan. I need to contact the Taiwan office.", py: "" },
+    { zh: "請幫我叫救護車。", en: "Please call an ambulance.", py: "" },
+    { zh: "這是我家人的電話。(指紙條)", en: "This is my family's phone number. (show note)", py: "" }
+  ]
+};
+
+let currentTransCat = 'basic';
+function renderPhrases(cat) {
+  const c = PHRASES[cat] || [];
+  const html = c.map(p => `
+    <div class="phrase">
+      <div class="zh">${p.zh}</div>
+      <div class="en">${p.en}</div>
+      ${p.py ? `<div class="pinyin">${p.py}</div>` : ''}
+      <button class="phrase-show-btn" onclick="showFullCard('${p.en.replace(/'/g, "\\'")}', '${p.zh.replace(/'/g, "\\'")}')">給對方看(放大)</button>
+    </div>
+  `).join('');
+  document.getElementById('phrases-container').innerHTML = html;
+}
+function switchTransCat(cat, btn) {
+  currentTransCat = cat;
+  document.querySelectorAll('#trans-tabs .sub-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderPhrases(cat);
+}
+renderPhrases('basic');
+
+// ===== 行程資料 =====
+const ITIN = {
+  van1: `
+    <div class="callout success">
+      <strong>溫哥華 5/8(五)~ 5/9(六)— 兩個整天</strong>
+      長途飛行後,第一天以調時差為主、輕鬆活動;第二天再深入逛市區,儲備體力為 5/10 登船準備。<br>
+      天氣:5/8 多雲時晴 10–18°C / 5/9 多雲、局部短暫雨 12–20°C。準備薄外套 + 折疊傘。
+    </div>
+
+    <div class="info-row" style="background:#eff6ff;border-left:5px solid #2563eb;border-radius:10px;">
+      <div class="label" style="color:#2563eb;">★ 飯店資訊</div>
+      <div class="value">
+        <b>Aercorn Hotel, Trademark Collection by Wyndham</b><br>
+        <span style="font-size:14px;color:#666;">溫哥華市中心(Downtown Vancouver)</span><br>
+        <span style="font-size:14px;color:#666;">⚠ 確切地址、電話、Check-in 時間請以訂房確認信為準,並截圖存手機</span><br>
+        <br>
+        <b>到 Canada Place 郵輪碼頭:</b>市中心走路約 10–15 分鐘,行李多建議叫車約 $10 加幣<br>
+        <b>到 YVR 機場:</b>步行 5 分鐘到 Canada Line 地鐵站,或計程車 30 分鐘<br>
+        <b>到 Robson Street 主購物街:</b>走路 5 分鐘<br>
+        <b>到 Stanley Park 史丹利公園:</b>走路 20-25 分鐘 / 計程車 5 分鐘<br>
+        <br>
+        <a href="https://www.google.com/maps/search/Aercorn+Hotel+Vancouver" style="color:#2563eb;font-weight:600;">📍 Google Maps 查飯店位置</a>
+      </div>
+    </div>
+
+    <div class="day-card">
+      <div class="day-label">5/8(五) DAY 1</div>
+      <div class="day-title">抵達日 — 桃園 → 溫哥華,飯店周邊散步</div>
+      <ul>
+        <li><span class="time">下午</span><div>抵達 YVR 溫哥華國際機場<br>✓ 入境加拿大(在飛機上會發 Declaration Card,先填好;e-Declaration 也可在 ArriveCAN App 預先填)<br>✓ 領行李 → 出關</div></li>
+        <li><span class="time">交通</span><div><b>機場到市區三選一:</b><br>• Canada Line 地鐵(約 25 分鐘,$10.5 加幣含機場附加費,有電梯,長輩友善)<br>• 計程車(約 30 分鐘,$35–45 加幣)<br>• Uber/Lyft(約 $30 加幣)<br>建議帶大行李時直接坐車不轉乘</div></li>
+        <li><span class="time">傍晚</span><div>飯店 Check-in 後休息 1–2 小時(克服時差很重要)<br>✓ 不要立刻睡覺,撐到當地時間 21–22 點再睡</div></li>
+        <li><span class="time">晚餐</span><div>飯店附近覓食。Robson 街上中、日、韓、越南餐廳很多,長輩易接受。<br>✓ 推薦:Kintaro Ramen 拉麵 / Pho Hoa 越南河粉 / Phnom Penh 唐人街金邊餐廳</div></li>
+        <li><span class="time">夜晚</span><div>飯店附近 5–10 分鐘短散步,看夜景幫助調時差,然後早睡</div></li>
+      </ul>
+    </div>
+
+    <div class="day-card">
+      <div class="day-label">5/9(六) DAY 2</div>
+      <div class="day-title">史丹利公園 + 蓋斯鎮 + 加拿大廣場</div>
+      <ul>
+        <li><span class="time">09:00</span><div>飯店附近早餐。Tim Hortons (TIM 哥) 是加拿大國民咖啡店,$5–8 一份。或飯店早餐。</div></li>
+        <li><span class="time">10:00</span><div><b>史丹利公園 Stanley Park</b><br>✓ 北美最大都市公園,海邊步道、原始森林、圖騰柱<br>✓ 推薦坐 <b>馬車遊園</b>(Stanley Park Horse-Drawn Tours,約 1 小時 $60 加幣/人,有中文導覽耳機)<br>✓ 不想走路:坐園內接駁巴士 Park Shuttle</div></li>
+        <li><span class="time">12:30</span><div>午餐:Stanley's Bar &amp; Grill(園內)或回市區 Robson 街用餐</div></li>
+        <li><span class="time">14:30</span><div>飯店休息 1 小時(時差仍會疲累)</div></li>
+        <li><span class="time">15:30</span><div><b>蓋斯鎮 Gastown</b> — 看蒸汽鐘 (Steam Clock,每 15 分鐘冒蒸汽噴笛)、逛紀念品店<br>✓ 鵝卵石路面,慢慢走,長輩需扶</div></li>
+        <li><span class="time">17:00</span><div><b>加拿大廣場 Canada Place</b>(明天登船的郵輪碼頭就是這裡)<br>✓ 提前認路,海邊散步看煤氣鎮和北岸山景<br>✓ 五彩風帆建築(Pan Pacific Hotel 和會展中心)</div></li>
+        <li><span class="time">晚餐</span><div>建議列治文港式飲茶或市區簡單一餐,早回飯店整理行李準備明天登船</div></li>
+      </ul>
+      <div class="callout danger" style="margin-top:12px;">
+        <strong>⚠ 避開地區</strong>
+        蓋斯鎮往東 1–2 條街(Hastings &amp; Main 一帶)是街友毒品區,看到帳篷或人多髒亂就立刻回頭。連 Google Maps 走路指引也要避開。<br>
+        Chinatown 唐人街白天可去,但晚上不建議。
+      </div>
+      <div class="callout" style="margin-top:8px;">
+        <strong>登船前晚的準備</strong>
+        ① 確認登船證 (Boarding Pass) 已下載到手機 ② 護照、信用卡、現金準備好 ③ 大行李貼好郵輪行李牌(已經寄到飯店或 check-in 時拿) ④ 慢性病藥放隨身,不要全放大行李
+      </div>
+    </div>
+  `,
+  cruise: `
+    <div class="callout success">
+      <strong>Royal Caribbean 海洋旋律號 Serenade of the Seas</strong>
+      7 晚阿拉斯加內灣航道(5/10 ~ 5/17)。停靠港:Sitka → Juneau → Hoonah/Icy Strait → Ketchikan。<br>
+      每天早上看 <b>Cruise Compass(每日節目單)</b>,船上時間以 <b>"Ship Time"</b> 為準(港口時間有時不同,以船上為主)。<br>
+      船卡叫 <b>SeaPass</b>,所有消費都靠它,離船結算。Royal Caribbean App 可在船上免費連線使用,看當日節目、訂位、與同行家人聊天。
+    </div>
+
+    <div class="accordion" style="margin-bottom:14px;">
+      <div class="acc-header" onclick="toggleAcc(this)" style="border-left-color:#059669;">
+        <b style="color:#059669;">★ 海洋旋律號 — 必知的設施與規則</b><span class="arrow">▶</span>
+      </div>
+      <div class="acc-body">
+        <p><b>主要餐廳:</b></p>
+        <p>• <b>Reflections 反映餐廳</b>(主餐廳,Deck 4-5,3 層)— 早午晚三餐,正式座位。固定時段或自由用餐看登船時收到的卡</p>
+        <p>• <b>Windjammer Marketplace</b>(自助餐,Deck 11)— 隨時開放,長輩最方便</p>
+        <p>• <b>Park Café</b>(Deck 6 Centrum)— 三明治、沙拉、湯,輕食</p>
+        <p>• <b>Sorrento's Pizza</b>(Deck 5)— 24 小時免費披薩</p>
+        <p>• <b>付費特色餐廳:</b>Chops Grille(牛排)、Giovanni's Table(義式)、Izumi(日式),需訂位 + 加價</p>
+        <p style="margin-top:8px;border-top:1px dashed #ddd;padding-top:8px;"><b>重要地點:</b></p>
+        <p>• <b>Guest Services 客服</b>(Deck 4 Centrum 中庭)— 任何問題、暈船藥、改餐廳座位</p>
+        <p>• <b>醫療中心 Medical Center</b>(Deck 2)— 24h 急診,白天門診時段看 Cruise Compass</p>
+        <p>• <b>Royal Theater 主劇院</b>(Deck 5 船頭)— 晚上有歌舞秀</p>
+        <p>• <b>Schooner Bar 帆船酒吧</b>(Deck 6)— 鋼琴酒吧,適合長輩</p>
+        <p>• <b>Solarium 太陽日光浴池</b>(Deck 11,僅限成人)— 室內泳池/熱水池,玻璃屋頂,看冰河時超棒</p>
+        <p>• <b>Centrum 中庭</b>(Deck 4-5)— 各種小型表演、爵士樂、舞會</p>
+        <p style="margin-top:8px;border-top:1px dashed #ddd;padding-top:8px;"><b>網路 (Voom Wi-Fi):</b></p>
+        <p>• <b>Surf 一般包</b> $20/天/裝置 — 可上網不能視訊<br>• <b>Surf+Stream</b> $25/天/裝置 — 可視訊<br>• <b>建議:買 1 個帳號全家輪流用</b>(同時只能 1 個裝置上線,但可切換)</p>
+        <p style="margin-top:8px;border-top:1px dashed #ddd;padding-top:8px;"><b>小費 (Gratuities):</b></p>
+        <p>• 內艙/海景艙:<b>每人 $18.00 USD/天</b>,自動加在船卡上<br>• 套房:每人 $20.50 USD/天<br>• 7 晚總共約 USD 126/人,船公司會自動結算<br>• 若想額外給特別好的服務生 $5-10 美金小費,在最後一晚給</p>
+        <p style="margin-top:8px;border-top:1px dashed #ddd;padding-top:8px;"><b>正式之夜 (Formal Night):</b></p>
+        <p>• 7 晚航程通常有 <b>2 個 Formal Night</b>(常見 Day 2 與 Day 6)<br>• 不強制,但主餐廳要至少 <b>整潔便服</b>,牛仔褲短褲拖鞋不行<br>• 想穿正式可帶西裝/洋裝,Buffet 隨便穿</p>
+        <p><b>Royal Caribbean App:</b>App Store/Play Store 搜「Royal Caribbean International」,登船前下載。船上免費 Wi-Fi 即可使用,可看 Cruise Compass、訂表演、訂餐廳、家人之間聊天</p>
+      </div>
+    </div>
+
+    <div class="day-card">
+      <div class="day-label">5/10(日) DAY 1</div>
+      <div class="day-title">溫哥華登船 — All aboard 15:30</div>
+      <ul>
+        <li><span class="time">10:30</span><div>飯店 Check-out。Aercorn Hotel 離 Canada Place 走路 12-15 分鐘,行李多建議搭計程車(~$10 加幣)</div></li>
+        <li><span class="time">11:30</span><div>建議 <b>11:30-12:30 之間到郵輪碼頭</b>(避免 13:00 後人潮高峰)<br>✓ 攜帶:護照 + 登船證 + 信用卡(綁定 SeaPass)+ ESTA + eTA<br>✓ 過 <b>美國 CBP 邊境檢查</b>(因郵輪進美國海域)<br>✓ 排隊 1-1.5 小時是正常的</div></li>
+        <li><span class="time">13:00–14:00</span><div>登船。行李會送到房間(可能要等到傍晚才到)<br>✓ 房間通常 13:30 後開放,可先到 <b>Windjammer 自助餐廳 (Deck 11)</b> 吃午餐</div></li>
+        <li><span class="time">14:30</span><div>探索船。先找:① 自己的房間 ② 主餐廳 Reflections ③ 醫療中心 Deck 2 ④ Guest Services Deck 4<br>✓ 到 Guest Services 索取免費暈船藥 (Bonine)</div></li>
+        <li><span class="time" style="color:#dc2626;font-weight:800;">15:30 ⚠</span><div><b>All aboard 最後上船時間</b> — 必須在船上!逾時船會啟航,你會被丟下</div></li>
+        <li><span class="time">16:00</span><div><b>強制救生演習 (Muster Drill)</b> — 用 App 看安全影片 + 到指定救生點刷 SeaPass 記錄。如果沒做這個,船會廣播找你</div></li>
+        <li><span class="time">17:00</span><div>啟航!到 <b>Deck 12 頂層甲板</b> 看郵輪經過獅門大橋,風景絕美</div></li>
+        <li><span class="time">晚餐</span><div>第一晚通常 <b>非正式之夜</b>,穿一般便服。Reflections 主餐廳或 Windjammer 都行</div></li>
+      </ul>
+      <div class="callout" style="margin-top:12px;">
+        <strong>天氣 5/10</strong>
+        晴時多雲 11–22°C。下午登船時甲板風較大,薄外套帶著。
+      </div>
+    </div>
+
+    <div class="day-card">
+      <div class="day-label">5/11(一) DAY 2</div>
+      <div class="day-title">海上巡航 At Sea — 內灣航道</div>
+      <ul>
+        <li><div>整天在船上,沒有港口。是適應船上生活、認識船的最好機會</div></li>
+        <li><div><b>建議今天必做的事:</b><br>① 走一圈船(找到主餐廳、Buffet、醫療中心 Medical Center、Guest Services 在哪)<br>② 看 5/12 Sitka 的下船指引(Sitka 多半是 <b>tender port 接駁港</b>,要搭小船下船)<br>③ 預訂 5/13 朱諾的 Mendenhall Glacier 半日遊 (郵輪 App 或岸上行程櫃台)<br>④ 確認晚餐安排 / 試試特色餐廳</div></li>
+        <li><div><b>船上節目:</b>劇院表演、賭場、SPA、健身房、桑拿。每天節目單上寫得清楚</div></li>
+        <li><div><b>長輩貼士:</b>在房間或頂層甲板看 Inside Passage 內灣航道風景,海面平靜如鏡(被群島包圍),有時可看到鯨魚噴水</div></li>
+      </ul>
+      <div class="callout danger" style="margin-top:12px;">
+        <strong>天氣 5/11(海上)</strong>
+        偏涼、多雲、局部有雨 8–12°C。海風明顯,到甲板一定要 <b>防風外套</b>。容易暈船的話,早上吃藥(Bonine 不嗜睡),多到甲板看遠方。
+      </div>
+    </div>
+
+    <div class="day-card">
+      <div class="day-label">5/12(二) DAY 3</div>
+      <div class="day-title">Sitka 錫特卡(舊俄都)— Gangway 11:00 / 離港 18:30</div>
+      <ul>
+        <li><span class="time">11:00</span><div>Gangway 開放下船。<b>Sitka 多為 tender port</b>:大船停外海,需搭小接駁船下岸(約 10-15 分鐘船程)<br>✓ Royal Caribbean App 上會發放 tender 號碼牌,輪到才能下船<br>✓ 早起的話,在 Windjammer 早餐看群山再準備</div></li>
+        <li><span class="time">必看景點(都離碼頭走路 5–15 分)</span><div>
+          • <b>St. Michael's Russian Orthodox Cathedral 俄式東正教堂</b> — 美國最古老的東正教堂(藍色洋蔥頂)<br>
+          • <b>Sitka National Historical Park 國家歷史公園</b> — 海邊原始森林步道 + 圖騰柱(平緩好走,長輩友善)<br>
+          • <b>Alaska Raptor Center 猛禽復育中心</b> — 救援白頭鷹、貓頭鷹,可近距離觀賞<br>
+          • <b>Sitka Sound Science Center</b> — 鮭魚孵育場 + 水族館
+        </div></li>
+        <li><span class="time">午餐</span><div>港口邊海鮮餐廳:Ludvig's Bistro、Beak Restaurant 都有阿拉斯加新鮮鮭魚</div></li>
+        <li><span class="time" style="color:#dc2626;font-weight:800;">17:30 ⚠</span><div><b>最後接駁船回大船</b>(離港 30-60 分鐘前停止 tender 服務)<br>建議 17:00 前就排隊等接駁,別冒險</div></li>
+        <li><span class="time">18:30</span><div>船離港,啟程前往 Juneau</div></li>
+      </ul>
+      <div class="callout" style="margin-top:12px;">
+        <strong>天氣 5/12 — 陣雨 8–12°C</strong>
+        穿防水外套 + 防水鞋。傘也帶著,風大時不一定能撐。
+      </div>
+    </div>
+
+    <div class="day-card">
+      <div class="day-label">5/13(三) DAY 4</div>
+      <div class="day-title">Juneau 朱諾(阿拉斯加首府)— Gangway 09:30 / 離港 21:30</div>
+      <ul>
+        <li><span class="time">09:30</span><div>Gangway 開放下船。<b>直接靠岸下船</b>(不需 tender),最方便<br>✓ 在港停留 12 小時,是全程最長的港口,可深入遊覽冰河</div></li>
+        <li><span class="time">主要景點</span><div>
+          ★ <b>Mendenhall Glacier 門登霍冰河</b>(本地最大景點)<br>
+          • 從港口搭 <b>Glacier Express Blue Bus</b>(港口邊賣票,$45 美金來回)<br>
+          • 或船公司 Shore Excursion(較貴但有導覽,長輩較推薦)<br>
+          • 訪客中心 + 平緩步道可走到冰河前 0.5 mile<br>
+          ★ <b>Mt. Roberts Tramway 纜車</b>($45 美金來回) — 看朱諾全景<br>
+          ★ 市中心 Franklin Street 步行區 — 州博物館、首府大樓、紀念品店<br>
+          ★ <b>有 12 小時可分配:</b>建議早上去冰河(半天),下午回港口逛市中心+午餐+紀念品
+        </div></li>
+        <li><span class="time">長輩特別提醒</span><div>
+          ★ 強烈建議在 5/11 海上日就 <b>預訂 Royal Caribbean Shore Excursion 的「Mendenhall Glacier &amp; City Tour」</b><br>
+          有大巴接送、英文導覽、不用走遠路,半天 $80-120 美金,長輩友善
+        </div></li>
+        <li><span class="time">午餐推薦</span><div>港口邊 Tracy's King Crab Shack 帝王蟹腿($60 一份)、Hangar on the Wharf 海景餐廳</div></li>
+        <li><span class="time" style="color:#dc2626;font-weight:800;">21:00 ⚠</span><div><b>建議 21:00 前回到船上</b>(離港 21:30,但 5 月 8 點仍是日落時分,夜晚冷)</div></li>
+        <li><span class="time">21:30</span><div>船離港,前往 Hoonah</div></li>
+      </ul>
+      <div class="callout" style="margin-top:12px;">
+        <strong>天氣 5/13 — 多雲、有陣雨 6–12°C(較冷)</strong>
+        洋蔥式穿搭。冰河區風大且有冰反射,需厚外套 + 帽子 + 太陽眼鏡。手套帶著拍照不冰手。
+      </div>
+    </div>
+
+    <div class="day-card">
+      <div class="day-label">5/14(四) DAY 5</div>
+      <div class="day-title">Hoonah / Icy Strait Point 冰峽角 — Gangway 07:30 / 離港 15:30</div>
+      <ul>
+        <li><span class="time">07:30</span><div>Gangway 開放下船。<b>注意:今天是最早下船的港口</b>(7:30!)<br>✓ Hoonah 是阿拉斯加最大 Tlingit 原住民村落,Icy Strait Point 是專用郵輪碼頭<br>✓ 通常直接靠岸,下船便利<br>✓ <b>建議 06:30 起床早餐,07:30 下船,效率最高</b></div></li>
+        <li><span class="time">在港僅 8 小時,要選重點</span><div>
+          ★ <b>免費接駁巴士</b>到 Hoonah 鎮中心(約 5 分鐘車程)<br>
+          ★ <b>圖騰柱公園 + Tlingit 文化中心</b>(碼頭旁,免費)— 看 Tlingit 原住民歌舞表演<br>
+          ★ <b>賞鯨團 Whale Watching</b>(Icy Strait 是世界最佳賞鯨點之一,座頭鯨群)$150-180 美金/人 — 強烈推薦給長輩,坐船 3 小時看大景<br>
+          ★ <b>ZipRider 高空滑索</b> — 世界最長 1,330 米($120 美金)<b>長輩不推薦</b><br>
+          ★ 森林步道(平緩,可看老鷹、熊蹤跡)<br>
+          ★ 海鮮午餐:The Crab Station 帝王蟹簡單享用
+        </div></li>
+        <li><span class="time" style="color:#dc2626;font-weight:800;">14:30 ⚠</span><div><b>建議 14:30 前回到船上</b>(離港 15:30,給自己留緩衝)<br>賞鯨團通常 11:00 出發,3 小時剛好回來</div></li>
+        <li><span class="time">15:30</span><div>船離港,前往 Ketchikan</div></li>
+      </ul>
+      <div class="callout" style="margin-top:12px;">
+        <strong>天氣 5/14 — 多雲 4–12°C(最冷的一天)</strong>
+        早晚較冷,加保暖帽 + 圍巾。賞鯨船上甲板更冷,可帶暖暖包。
+      </div>
+    </div>
+
+    <div class="day-card">
+      <div class="day-label">5/15(五) DAY 6</div>
+      <div class="day-title">Ketchikan 凱奇坎(鮭魚之都)— Gangway 10:30 / 離港 18:30</div>
+      <ul>
+        <li><span class="time">10:30</span><div>Gangway 開放下船。直接靠岸,離市中心走路 5 分鐘<br>✓ 在港 8 小時,可悠閒逛街</div></li>
+        <li><span class="time">必看景點(都在港口走路範圍內)</span><div>
+          ★ <b>Creek Street 克里克街</b> — 木造高腳屋建在小溪上,淘金時代紅燈區改建的紀念品街(平緩,長輩友善)<br>
+          ★ <b>Salmon Ladder 鮭魚跳躍</b>(初夏可看到鮭魚逆流而上)<br>
+          ★ <b>Totem Heritage Center 圖騰柱中心</b>(室內 + 戶外,$8 美金)<br>
+          ★ <b>Saxman Native Village 撒克斯曼村</b> — 北美最大圖騰柱聚集地($40 美金 Shore Excursion)<br>
+          ★ <b>Married Man's Trail 已婚男士步道</b>(從 Creek Street 走到山上,有點坡度,看景色)
+        </div></li>
+        <li><span class="time">購物 — 重點!</span><div>凱奇坎是郵輪 <b>最後一站</b>, <b>紀念品最便宜</b><br>★ 鮭魚乾、煙燻鮭魚(真空包,可帶回台灣)<br>★ 阿拉斯加風 T 恤、磁鐵<br>★ 楓糖漿、莓果果醬<br>★ 木雕圖騰小禮物</div></li>
+        <li><span class="time">午餐</span><div>The Bar Harbor Restaurant、Annabelle's Famous Keg &amp; Chowder House — 海鮮粥</div></li>
+        <li><span class="time" style="color:#dc2626;font-weight:800;">17:30 ⚠</span><div><b>建議 17:30 前回到船上</b>(離港 18:30)<br>下午 5 點後紀念品店多半關門,5 點是回船的好時機</div></li>
+        <li><span class="time">18:30</span><div>船離港,航向溫哥華</div></li>
+      </ul>
+      <div class="callout" style="margin-top:12px;">
+        <strong>天氣 5/15 — 陰天 8–14°C</strong>
+        凱奇坎是阿拉斯加最潮濕的地方(年降雨日 200+),雨傘 + 防水鞋必備。
+      </div>
+    </div>
+
+    <div class="day-card">
+      <div class="day-label">5/16(六) DAY 7</div>
+      <div class="day-title">海上巡航 At Sea — 返程 + 收行李</div>
+      <ul>
+        <li><div>整天在船上,享受最後一天郵輪生活</div></li>
+        <li><div><b>白天活動:</b>SPA 半價優惠常在這天、看船員表演、賓果、賭場、看免稅店折扣<br>甲板上看內灣景色,有機會看到 Orca 殺人鯨</div></li>
+        <li><div><b>傍晚:</b>船長告別酒會 / 第二次正式之夜(看船公司安排)</div></li>
+        <li><div><b>晚上 22:00 前:</b><br>★ <b>大行李放門外給船員收</b>(掛上船公司發的標籤,顏色決定隔天下船時段)<br>★ 隨身行李保留貴重物品 + 隔天換洗<br>★ 結算船卡帳單(房間電視可看)<br>★ 給服務生小費(傳統用餐者)</div></li>
+      </ul>
+      <div class="callout" style="margin-top:12px;">
+        <strong>天氣 5/16 — 偏涼、多雲 8–12°C</strong>
+        甲板拍照要保暖。
+      </div>
+    </div>
+
+    <div class="day-card">
+      <div class="day-label">5/17(日) DAY 8</div>
+      <div class="day-title">回到溫哥華 — Departure 07:30(全船下船)</div>
+      <ul>
+        <li><span class="time">06:30</span><div>抵達溫哥華 Canada Place 碼頭</div></li>
+        <li><span class="time">07:00</span><div>早餐:Windjammer 還是會開,但可能擁擠</div></li>
+        <li><span class="time">07:30 起</span><div>分批下船。<b>行李標籤顏色決定下船時段</b>(顏色順序在 Cruise Compass 上會公布,通常 7:30-09:30 之間)<br>✓ 不要急,看清楚自己的顏色再下<br>✓ 如要趕飛機,通知 Guest Services 改早一點的顏色</div></li>
+        <li><span class="time">下船流程</span><div>
+          ① 領隨身行李,出房間(房間 08:00 前要清空)<br>
+          ② 到指定樓層集合下船(Royal Caribbean 通常從 Deck 1)<br>
+          ③ 過 <b>加拿大海關</b>(自助 Primary Inspection Kiosk 較快)<br>
+          ④ 行李區找大行李(同顏色標籤放一起)<br>
+          ⑤ 出大廳到 Aercorn Hotel 或下一個飯店
+        </div></li>
+        <li><span class="time">交通到飯店</span><div>Aercorn Hotel 走路 12-15 分鐘可到,或計程車 $10-15 加幣</div></li>
+      </ul>
+      <div class="callout danger" style="margin-top:12px;">
+        <strong>天氣 5/17 — 上午可能雷雨,之後多雲 10–16°C</strong>
+        下船時拉行李移動建議帶 <b>雨衣或折疊傘</b>,雷雨時待在飯店或室內等過。
+      </div>
+    </div>
+  `,
+  van2: `
+    <div class="callout success">
+      <strong>溫哥華返程 5/17 下午 ~ 5/19 — 兩天三段</strong>
+      下船日(5/17)以「短距離活動 + 飯店休息」為主;5/18 整天可深入景點;5/19 整理行李 + 機場。
+    </div>
+
+    <div class="day-card">
+      <div class="day-label">5/17(日) 下午 + 傍晚</div>
+      <div class="day-title">下船日 — 飯店 Check-in + 輕鬆購物</div>
+      <ul>
+        <li><span class="time">10:00–12:00</span><div>下船 → 飯店 Check-in(若太早 check-in,可寄存行李先吃午餐)</div></li>
+        <li><span class="time">12:00</span><div>午餐:長途搬行李會累,選飯店附近輕鬆吃。市區的 Pacific Centre Mall 美食街選擇多</div></li>
+        <li><span class="time">13:30</span><div>飯店休息 2 小時(下船日很累)</div></li>
+        <li><span class="time">16:00</span><div><b>輕鬆選一</b>(看天氣):<br>
+          A. <b>Robson Street 羅伯森街購物</b> — 楓糖、保健品、Roots 衣服<br>
+          B. <b>列治文 Richmond</b>(Canada Line 25 分鐘) — 華人區、大統華 T&amp;T 超市、時代坊
+        </div></li>
+        <li><span class="time">晚餐</span><div>列治文港式飲茶 / 火鍋(中文菜單,長輩最舒服)<br>市區也可:Hai Chiu 海鮮麵、Maxim's 麥心(中式)</div></li>
+        <li><div>早回飯店,把今天買的東西整理好</div></li>
+      </ul>
+      <div class="callout" style="margin-top:12px;">
+        <strong>天氣 5/17 — 上午雷雨,午後多雲 10–16°C</strong>
+        下船時帶雨具。下午活動時可能放晴,但晚上會涼。
+      </div>
+    </div>
+
+    <div class="day-card">
+      <div class="day-label">5/18(一) 整天</div>
+      <div class="day-title">卡皮蘭諾吊橋 + 格蘭維爾島</div>
+      <ul>
+        <li><span class="time">09:00</span><div>飯店附近早餐(Tim Hortons 經濟早餐 / 飯店早餐)</div></li>
+        <li><span class="time">09:30</span><div><b>卡皮蘭諾吊橋公園 Capilano Suspension Bridge Park</b><br>
+          ★ <b>從市區搭免費接駁巴士</b>(在 Canada Place / Hyatt Hotel / Westin 等地點上車,每 30 分鐘一班)<br>
+          ★ 入場費約 $69 加幣/成人,長者 $59<br>
+          ★ <b>三大景點:</b>① 137 米長吊橋(會晃) ② 樹頂步道 Treetops Adventure(7 座小橋連接老樹) ③ 懸崖步道 Cliffwalk(玻璃地板)<br>
+          ★ <b>長輩貼士:</b>吊橋會晃,慢慢走、扶緊。不敢過橋的話,樹頂步道平緩穩固,景觀一樣好
+        </div></li>
+        <li><span class="time">12:30</span><div>從接駁巴士回市區。午餐:Robson 街附近</div></li>
+        <li><span class="time">14:30</span><div>飯店午休 1 小時</div></li>
+        <li><span class="time">15:30</span><div><b>格蘭維爾島 Granville Island</b><br>
+          ★ 從 Downtown 搭 <b>Aquabus 小渡船</b>(像水上計程車,約 $4 加幣,3 分鐘穿越),有趣又不累<br>
+          ★ <b>公共市場 Public Market</b> — 各國美食、新鮮水果、楓糖、烘焙、現做海鮮<br>
+          ★ 旁邊有 Net Loft 手工藝品市集(送禮)<br>
+          ★ 海邊步道散步,看遊艇和市區天際線
+        </div></li>
+        <li><span class="time">晚餐</span><div>格蘭維爾島回程後,Robson 街用餐 / 列治文港式餐廳</div></li>
+        <li><span class="time">晚上</span><div>回飯店整理行李 — 把要冰的、不能託運的東西分好</div></li>
+      </ul>
+      <div class="callout" style="margin-top:12px;">
+        <strong>天氣 5/18 — 春季涼爽 約 10–18°C(出發前 2-3 天再查)</strong>
+        洋蔥式穿搭,薄外套必備。卡皮蘭諾在森林裡較涼。
+      </div>
+    </div>
+
+    <div class="day-card">
+      <div class="day-label">5/19(二) 返程日</div>
+      <div class="day-title">飯店 → YVR 機場 → 桃園</div>
+      <ul>
+        <li><span class="time">早上</span><div>飯店退房。<br>
+          ★ 確認:護照 / 機票 / 託運行李是否超重(亞洲線約 23kg/件)<br>
+          ★ 加幣零錢可在機場咖啡廳花掉,或留作紀念
+        </div></li>
+        <li><span class="time">出發到機場</span><div><b>建議起飛前 3 小時抵達機場</b>(國際線):<br>
+          • Canada Line 地鐵 25 分鐘 $9.5 加幣<br>
+          • 計程車 30 分鐘 $35–45 加幣(行李多時推薦)<br>
+          • Uber 30 分鐘 $30–40 加幣
+        </div></li>
+        <li><span class="time">機場流程</span><div>① Check-in 託運行李 ② 過加拿大出境(美籍航空可能要過 US Pre-clearance) ③ 安檢 ④ 找登機門<br>
+          機場有免稅店、餐廳、休息區。長榮/華航直飛桃園約 12 小時
+        </div></li>
+        <li><span class="time">登機前注意</span><div>★ 充電 — 飛行前充飽手機 + 行動電源<br>★ 上飛機前服藥(若有時差敏感的藥)<br>★ 多喝水,飛機上很乾</div></li>
+      </ul>
+      <div class="callout" style="margin-top:12px;">
+        <strong>天氣 5/19 — 春季涼爽 約 10–18°C(出發前再查)</strong>
+        前往機場時備薄外套,飛機上冷氣強。
+      </div>
+      <div class="callout success" style="margin-top:8px;">
+        <strong>飛回台灣前最後檢查</strong>
+        ① 護照 ② 登機證/機票 ③ 信用卡/現金 ④ 隨身藥 ⑤ 手機+充電器+行動電源 ⑥ 紀念品收據(海關抽查時可能需要) ⑦ 入境台灣的「線上申報」(如有需要可在飛機上填寫紙本)
+      </div>
+    </div>
+  `,
+  tips: `
+    <div class="callout">
+      <strong>長輩自由行通用秘訣</strong>
+      行程不要排太滿,留時間休息。
+    </div>
+    <div class="accordion">
+      <div class="acc-header" onclick="toggleAcc(this)">每日體力管理 <span class="arrow">▶</span></div>
+      <div class="acc-body">
+        <p>• <b>早上 9-12 點</b>:精神最好,安排主要景點</p>
+        <p>• <b>中午後</b>:吃飽飯後回飯店休息 1-2 小時</p>
+        <p>• <b>下午 3-6 點</b>:近距離輕鬆景點</p>
+        <p>• <b>晚餐後</b>:回飯店,不夜遊</p>
+        <p>• <b>每天最多走 1 萬步</b>,膝蓋會痠</p>
+      </div>
+    </div>
+    <div class="accordion">
+      <div class="acc-header" onclick="toggleAcc(this)">交通建議 <span class="arrow">▶</span></div>
+      <div class="acc-body">
+        <p><b>在溫哥華市區:</b></p>
+        <p>• <b>SkyTrain 地鐵</b>:Canada Line / Expo Line / Millennium Line,一張單程 $3.5 加幣,有電梯,長輩友善</p>
+        <p>• <b>公車</b>:全部低底盤,司機看到老人會調整下車板</p>
+        <p>• <b>Compass Card 一日券</b>:$11.5 加幣可無限搭,2 人以上划算</p>
+        <p>• <b>Uber/Lyft</b>:在加拿大已合法,App 叫車最簡單,輸入飯店地址即可</p>
+        <p>• <b>計程車</b>:路邊舉手或請飯店叫車。從機場到市區約 $35 加幣</p>
+        <p><b>機場 → 市區:</b></p>
+        <p>• Canada Line 地鐵 25 分鐘 $9.5 加幣(有附加費)</p>
+        <p>• 計程車 30 分鐘 $35 加幣</p>
+      </div>
+    </div>
+    <div class="accordion">
+      <div class="acc-header" onclick="toggleAcc(this)">省錢小撇步 <span class="arrow">▶</span></div>
+      <div class="acc-body">
+        <p>• <b>飯店早餐</b>常常很貴($25 起),不如外面 Tim Hortons 一份 $8</p>
+        <p>• <b>逛超市</b>(Save-On-Foods, T&amp;T)買水、水果、零食帶上船</p>
+        <p>• <b>郵輪上的飲料/Wi-Fi 都很貴</b>,想用 Wi-Fi 買一個帳號全家輪流用,或港口找咖啡店免費 Wi-Fi</p>
+        <p>• <b>免稅店</b>不一定比較便宜,先比價</p>
+        <p>• <b>退稅</b>:加拿大 BC 省 <b>沒有遊客退稅</b>(2007 年取消)</p>
+      </div>
+    </div>
+    <div class="accordion">
+      <div class="acc-header" onclick="toggleAcc(this)">天氣與穿搭(5/8 ~ 5/19 實際預報) <span class="arrow">▶</span></div>
+      <div class="acc-body">
+        <p><b>整體判斷:</b>5 月初春,氣溫比夏季低、雨多。<b>必備防風防水外套</b>,雨衣或折疊傘,洋蔥式穿搭。</p>
+        <p><b>溫哥華(5/8、5/9、5/17、5/18、5/19):</b>10–22°C,白天舒適,早晚較涼,可能短暫雨</p>
+        <p><b>海上日(5/11、5/16):</b>8–12°C,海風大,甲板偏冷</p>
+        <p><b>Sitka 錫特卡(5/12):</b>陣雨 8–12°C,雨衣 + 防水鞋</p>
+        <p><b>Juneau 朱諾(5/13):</b>多雲有陣雨 6–12°C,冰河區更冷</p>
+        <p><b>Hoonah / Icy Strait(5/14):</b>多雲 4–12°C(全程最冷),保暖帽 + 圍巾 + 厚外套</p>
+        <p><b>Ketchikan 凱奇坎(5/15):</b>陰天 8–14°C,潮濕</p>
+        <p style="margin-top:8px;border-top:1px dashed #ddd;padding-top:8px;"><b>洋蔥式穿法:</b>內層薄長袖 → 中層羊毛/刷毛 → 外層防風防水外套</p>
+        <p><b>鞋子:</b>防水運動鞋(走路多),飯店/船上備一雙拖鞋</p>
+        <p><b>必帶:</b>太陽眼鏡(冰反光)、護唇膏、乳液(空氣乾)、暖暖包、防水外套(連帽)、毛帽、薄手套</p>
+        <p><b>提醒:</b>5/18-5/19 是預報較長週期,出發前 2-3 天再用 Apple/Google 天氣查一次</p>
+      </div>
+    </div>
+    <div class="accordion">
+      <div class="acc-header" onclick="toggleAcc(this)">手機 / 網路 <span class="arrow">▶</span></div>
+      <div class="acc-body">
+        <p><b>選項 1:漫遊</b> — 中華電信日租型,加拿大 1 天約 NT$249,簡單但較貴</p>
+        <p><b>選項 2:eSIM</b> — 在台灣或網路上買北美 eSIM,3GB/7天約 NT$300,便宜方便</p>
+        <p><b>選項 3:租 Wi-Fi 機</b> — 全家共用,但要記得每天充電</p>
+        <p><b>郵輪上 Wi-Fi:</b>很貴(約 USD 100/週),買 1 個帳號全家輪流用</p>
+        <p><b>港口 Wi-Fi:</b>星巴克、麥當勞、許多商店有免費 Wi-Fi</p>
+        <p><b>必裝 App:</b></p>
+        <p>• Google Maps(下載溫哥華離線地圖)</p>
+        <p>• Google Translate(下載中英文離線翻譯)</p>
+        <p>• Uber / Lyft</p>
+        <p>• 郵輪公司 App(船上免費可用,看每日節目)</p>
+        <p>• Whatsapp / LINE(跟家人聯絡)</p>
+      </div>
+    </div>
+    <div class="accordion">
+      <div class="acc-header" onclick="toggleAcc(this)">行李清單 (老人特別版) <span class="arrow">▶</span></div>
+      <div class="acc-body">
+        <p><b>證件文件 (隨身行李,不託運):</b></p>
+        <p>✓ 護照 + 影本 + 手機照片<br>✓ 美國 ESTA 簽證/加拿大 eTA 確認信<br>✓ 機票登機證影本<br>✓ 郵輪登船證 (Boarding Pass)<br>✓ 旅遊保險保單</p>
+        <p><b>藥品 (隨身):</b></p>
+        <p>✓ 慢性病藥(全行程 + 5 天)<br>✓ 暈船藥<br>✓ 止痛藥、感冒藥、腸胃藥<br>✓ 英文處方箋<br>✓ 醫師中英文病歷卡</p>
+        <p><b>衣物:</b></p>
+        <p>✓ 防水外套(連帽)<br>✓ 厚外套(冰河甲板)<br>✓ 毛帽、手套、圍巾<br>✓ 防水鞋 / 好穿運動鞋<br>✓ 1 套正式服裝(郵輪正式之夜)<br>✓ 泳衣(郵輪有泳池/SPA)<br>✓ 內衣襪子備用</p>
+        <p><b>3C:</b></p>
+        <p>✓ 手機 + 充電器(美加和台灣插頭一樣)<br>✓ 行動電源(放隨身,不可託運)<br>✓ 相機 / 望遠鏡(看冰河鯨魚)</p>
+        <p><b>其他:</b></p>
+        <p>✓ 老花眼鏡(備用一副)<br>✓ 摺疊雨傘<br>✓ 暖暖包<br>✓ 環保水壺<br>✓ 小零食(餅乾、小糖果救急)</p>
+      </div>
+    </div>
+  `
+};
+
+let currentItin = 'van1';
+function switchItin(key, btn) {
+  currentItin = key;
+  document.querySelectorAll('#itinerary .sub-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('itin-content').innerHTML = ITIN[key];
+}
+document.getElementById('itin-content').innerHTML = ITIN.van1;
+
+// ===== 通用 =====
+function showSection(id) {
+  document.querySelectorAll('.section').forEach(s => {
+    s.classList.remove('active');
+    s.style.display = 'none';
+  });
+  const target = document.getElementById(id);
+  target.classList.add('active');
+  target.style.display = 'block';
+  window.scrollTo(0, 0);
+}
+
+function toggleAcc(header) {
+  const body = header.nextElementSibling;
+  const isActive = header.classList.contains('active');
+  // 收合所有同層
+  const parent = header.closest('.section');
+  parent.querySelectorAll('.acc-header.active').forEach(h => {
+    h.classList.remove('active');
+    h.nextElementSibling.classList.remove('active');
+  });
+  if (!isActive) {
+    header.classList.add('active');
+    body.classList.add('active');
+  }
+}
+
+function showFullCard(en, zh) {
+  document.getElementById('fullcard-text').textContent = en;
+  document.getElementById('fullcard-zh').textContent = zh;
+  document.getElementById('fullcard-overlay').classList.add('active');
+}
+function closeFullCard() {
+  document.getElementById('fullcard-overlay').classList.remove('active');
+}
+
+// ===== 即時翻譯功能 =====
+let translateDir = 'zh2en'; // 'zh2en' or 'en2zh'
+let lastTranslated = '';
+let lastSource = '';
+let speechRec = null;
+
+function setDirection(dir) {
+  translateDir = dir;
+  document.getElementById('dir-zh2en').classList.toggle('active', dir === 'zh2en');
+  document.getElementById('dir-en2zh').classList.toggle('active', dir === 'en2zh');
+  document.getElementById('rt-input').placeholder =
+    dir === 'zh2en' ? '輸入中文,或按下面「說話」按鈕...' : 'Type English or press the microphone button...';
+}
+
+function clearTranslate() {
+  document.getElementById('rt-input').value = '';
+  const out = document.getElementById('rt-output');
+  out.textContent = '翻譯結果會顯示在這裡';
+  out.classList.add('empty');
+  document.getElementById('rt-actions').style.display = 'none';
+  document.getElementById('rt-status').textContent = '';
+}
+
+async function doTranslate() {
+  const text = document.getElementById('rt-input').value.trim();
+  if (!text) {
+    setStatus('請先輸入要翻譯的內容');
+    return;
+  }
+  const out = document.getElementById('rt-output');
+  out.classList.remove('empty');
+  out.textContent = '翻譯中...';
+  setStatus('正在連線翻譯服務...');
+
+  const fromLang = translateDir === 'zh2en' ? 'zh-TW' : 'en';
+  const toLang = translateDir === 'zh2en' ? 'en' : 'zh-TW';
+
+  try {
+    const result = await translateText(text, fromLang, toLang);
+    out.textContent = result;
+    lastTranslated = result;
+    lastSource = text;
+    document.getElementById('rt-actions').style.display = 'grid';
+    setStatus('完成。可按「播放」聽發音、或「給對方看」放大顯示');
+  } catch (err) {
+    out.textContent = '翻譯失敗,請點下方「Google翻譯」按鈕直接前往';
+    out.classList.add('empty');
+    document.getElementById('rt-actions').style.display = 'grid';
+    lastSource = text;
+    lastTranslated = '';
+    setStatus('沒有網路或服務暫時無法使用');
+  }
+}
+
+async function translateText(text, from, to) {
+  // 主要 API: MyMemory(免費,無需 API key)
+  const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=${from}|${to}`;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error('http ' + res.status);
+  const data = await res.json();
+  if (data.responseStatus !== 200 && data.responseStatus !== '200') {
+    throw new Error('api error');
+  }
+  return data.responseData.translatedText;
+}
+
+function startVoiceInput() {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) {
+    setStatus('您的瀏覽器不支援語音輸入(請改用 iPhone Safari 或 Android Chrome)');
+    return;
+  }
+  const btn = document.getElementById('voice-btn');
+  if (speechRec) {
+    try { speechRec.stop(); } catch(e) {}
+    speechRec = null;
+    btn.classList.remove('recording');
+    btn.textContent = '🎤 說話';
+    return;
+  }
+  speechRec = new SR();
+  speechRec.lang = translateDir === 'zh2en' ? 'zh-TW' : 'en-US';
+  speechRec.continuous = false;
+  speechRec.interimResults = true;
+  speechRec.maxAlternatives = 1;
+
+  btn.classList.add('recording');
+  btn.textContent = '⬛ 停止';
+  setStatus('請開始說話...');
+
+  speechRec.onresult = (e) => {
+    let txt = '';
+    for (let i = e.resultIndex; i < e.results.length; i++) {
+      txt += e.results[i][0].transcript;
+    }
+    document.getElementById('rt-input').value = txt;
+    if (e.results[e.results.length - 1].isFinal) {
+      doTranslate();
+    }
+  };
+  speechRec.onerror = (e) => {
+    setStatus('語音辨識錯誤: ' + e.error + '(請改用打字)');
+    btn.classList.remove('recording');
+    btn.textContent = '🎤 說話';
+    speechRec = null;
+  };
+  speechRec.onend = () => {
+    btn.classList.remove('recording');
+    btn.textContent = '🎤 說話';
+    speechRec = null;
+  };
+  try {
+    speechRec.start();
+  } catch (err) {
+    setStatus('無法啟動麥克風,請確認已允許麥克風權限');
+    btn.classList.remove('recording');
+    btn.textContent = '🎤 說話';
+    speechRec = null;
+  }
+}
+
+function speakOutput() {
+  if (!lastTranslated) return;
+  if (!('speechSynthesis' in window)) {
+    setStatus('此裝置不支援語音播放');
+    return;
+  }
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(lastTranslated);
+  u.lang = translateDir === 'zh2en' ? 'en-US' : 'zh-TW';
+  u.rate = 0.85;
+  u.volume = 1;
+  speechSynthesis.speak(u);
+  setStatus('正在播放發音(請開啟手機音量)');
+}
+
+function showOutputFull() {
+  if (!lastTranslated) {
+    // 翻譯失敗時,直接放大原文
+    showFullCard(lastSource || '(無內容)', '請對方協助看上方文字');
+    return;
+  }
+  showFullCard(lastTranslated, lastSource);
+}
+
+function openGoogleTranslate() {
+  const text = document.getElementById('rt-input').value.trim() || lastSource;
+  if (!text) {
+    setStatus('請先輸入內容');
+    return;
+  }
+  const sl = translateDir === 'zh2en' ? 'zh-TW' : 'en';
+  const tl = translateDir === 'zh2en' ? 'en' : 'zh-TW';
+  const url = `https://translate.google.com/?sl=${sl}&tl=${tl}&text=${encodeURIComponent(text)}&op=translate`;
+  window.open(url, '_blank');
+}
+
+function setStatus(msg) {
+  document.getElementById('rt-status').textContent = msg;
+}
+
+// ===== 找回家人 / 定位功能 =====
+let lastLocationUrl = '';
+let lastLocationText = '';
+
+function getMyLocation() {
+  const result = document.getElementById('locate-result');
+  const status = document.getElementById('locate-status');
+  const btn = document.getElementById('locate-btn');
+
+  if (!navigator.geolocation) {
+    status.textContent = '此裝置不支援定位';
+    return;
+  }
+
+  btn.classList.add('recording');
+  btn.textContent = '正在取得位置...';
+  status.textContent = '請在彈出視窗點「允許」以使用定位';
+
+  navigator.geolocation.getCurrentPosition(
+    async (pos) => {
+      const lat = pos.coords.latitude;
+      const lng = pos.coords.longitude;
+      const accuracy = Math.round(pos.coords.accuracy);
+      const mapsUrl = `https://maps.google.com/?q=${lat},${lng}`;
+
+      // 嘗試反向地理編碼 (BigDataCloud 免費,免 API key)
+      let address = '位置已取得(地址查詢中...)';
+      try {
+        const r = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lng}&localityLanguage=zh-TW`);
+        if (r.ok) {
+          const d = await r.json();
+          const parts = [d.locality, d.principalSubdivision, d.countryName].filter(Boolean);
+          address = parts.join(', ') || '無法取得地址';
+          if (d.localityInfo?.administrative?.length) {
+            const street = d.localityInfo.administrative.find(a => a.adminLevel >= 6);
+            if (street?.name) address = street.name + ', ' + address;
+          }
+        }
+      } catch (e) {
+        address = '無法查詢地址(但位置已取得,可直接分享連結)';
+      }
+
+      lastLocationUrl = mapsUrl;
+      lastLocationText = `我走失了!我目前位置: ${address}\n地圖: ${mapsUrl}`;
+
+      result.innerHTML = `
+        <div class="addr">📍 ${address}</div>
+        <div class="coords">座標: ${lat.toFixed(5)}, ${lng.toFixed(5)}</div>
+        <div class="accuracy">定位精準度: 約 ±${accuracy} 公尺</div>
+        <a href="${mapsUrl}" target="_blank" style="display:block;background:#ea580c;color:white;text-align:center;padding:12px;border-radius:8px;text-decoration:none;font-weight:700;margin-bottom:10px;">🗺️ 在 Google Maps 看這個位置</a>
+        <div class="locate-actions">
+          <button class="green" onclick="shareMyLocation()">📤 分享給家人</button>
+          <button onclick="copyMyLocation()">📋 複製文字</button>
+        </div>
+      `;
+      result.classList.add('show');
+      btn.classList.remove('recording');
+      btn.textContent = '重新定位';
+      status.textContent = '位置取得成功!請按「分享給家人」傳出去';
+    },
+    (err) => {
+      btn.classList.remove('recording');
+      btn.textContent = '取得我目前位置';
+      let msg = '無法取得位置';
+      if (err.code === 1) msg = '您拒絕了定位權限。請到瀏覽器設定 → 網站權限 → 允許此網站使用位置';
+      else if (err.code === 2) msg = '無法取得位置(可能 GPS 訊號太弱,試試到戶外)';
+      else if (err.code === 3) msg = '取得位置逾時,請再試一次';
+      status.textContent = msg;
+    },
+    { enableHighAccuracy: true, timeout: 20000, maximumAge: 60000 }
+  );
+}
+
+function shareMyLocation() {
+  if (!lastLocationUrl) return;
+  const status = document.getElementById('locate-status');
+  if (navigator.share) {
+    navigator.share({
+      title: '我目前位置',
+      text: lastLocationText,
+      url: lastLocationUrl
+    }).then(() => {
+      status.textContent = '分享成功';
+    }).catch(() => {
+      copyMyLocation();
+    });
+  } else {
+    copyMyLocation();
+    status.textContent = '此瀏覽器不支援直接分享,已複製文字,請貼到 LINE/簡訊';
+  }
+}
+
+function copyMyLocation() {
+  if (!lastLocationText) return;
+  const status = document.getElementById('locate-status');
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(lastLocationText).then(() => {
+      status.textContent = '✓ 已複製到剪貼簿,可貼到 LINE/簡訊/Email';
+    }).catch(() => {
+      // fallback
+      promptCopy();
+    });
+  } else {
+    promptCopy();
+  }
+}
+
+function promptCopy() {
+  prompt('請手動複製下方文字:', lastLocationText);
+}
+</script>
+
+</body>
+</html>
